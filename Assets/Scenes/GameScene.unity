@@ -1658,6 +1658,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   _disk_SO: {fileID: 11400000, guid: 3c9e7644c4184a54fa25e93150f16183, type: 2}
+  _board_SO: {fileID: 11400000, guid: 3347fbb61940be449b9be27ce2d8beca, type: 2}
 --- !u!1001 &640906071477724255
 PrefabInstance:
   m_ObjectHideFlags: 0
