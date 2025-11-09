@@ -6,6 +6,6 @@ public class GameplayManager : GenericMonoSingleton<GameplayManager>
 
     public void TakeTurn(int colIndex)
     {
-        GameManager.Instance.Get<DiskSpawnService>().SpawnDisk(DiskType.DiskRed, _spawnLocations[colIndex].position);
+        GameManager.Instance.Get<DiskSpawnService>().SpawnDisk(DiskTypeEnum.DiskRed, _spawnLocations[colIndex].position);
     }
 }
