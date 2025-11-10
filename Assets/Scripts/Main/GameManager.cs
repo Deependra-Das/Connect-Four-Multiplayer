@@ -20,11 +20,19 @@ public class GameManager : GenericMonoSingleton<GameManager>
     {
         ServiceLocator.Register(new DiskSpawnService(_disk_SO));
         ServiceLocator.Register(new BoardService(_board_SO));
+        ServiceLocator.Register(new DiskPreviewService(_disk_SO));
     }
 
     private void DeregisterServices()
     {
+        ServiceLocator.Unregister<DiskSpawnService>();
+        ServiceLocator.Unregister<BoardService>();
+        ServiceLocator.Unregister<DiskPreviewService>();
+    }
 
+    private void OnDestroy()
+    {
+        DeregisterServices();
     }
 
     public T Get<T>()
