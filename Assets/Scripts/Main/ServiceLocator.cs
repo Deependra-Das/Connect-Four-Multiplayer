@@ -1,46 +1,49 @@
 using System;
 using System.Collections.Generic;
 
-public class ServiceLocator
+namespace ConnectFourMultiplayer.Main
 {
-    private static readonly Dictionary<Type, object> services = new Dictionary<Type, object>();
-
-    public static void Register<T>(T service)
+    public class ServiceLocator
     {
-        var type = typeof(T);
-        if (!services.ContainsKey(type))
-        {
-            services[type] = service;
-        }
-        else
-        {
-            throw new InvalidOperationException($"Service of type {type.Name} is already registered.");
-        }
-    }
+        private static readonly Dictionary<Type, object> services = new Dictionary<Type, object>();
 
-    public static T Get<T>()
-    {
-        var type = typeof(T);
-        if (services.ContainsKey(type))
+        public static void Register<T>(T service)
         {
-            return (T)services[type];
+            var type = typeof(T);
+            if (!services.ContainsKey(type))
+            {
+                services[type] = service;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Service of type {type.Name} is already registered.");
+            }
         }
-        else
-        {
-            throw new InvalidOperationException($"Service of type {type.Name} is not registered.");
-        }
-    }
 
-    public static void Unregister<T>()
-    {
-        var type = typeof(T);
-        if (services.ContainsKey(type))
+        public static T Get<T>()
         {
-            services.Remove(typeof(T));
+            var type = typeof(T);
+            if (services.ContainsKey(type))
+            {
+                return (T)services[type];
+            }
+            else
+            {
+                throw new InvalidOperationException($"Service of type {type.Name} is not registered.");
+            }
         }
-        else
+
+        public static void Unregister<T>()
         {
-            throw new InvalidOperationException($"Service of type {type.Name} is not registered.");
+            var type = typeof(T);
+            if (services.ContainsKey(type))
+            {
+                services.Remove(typeof(T));
+            }
+            else
+            {
+                throw new InvalidOperationException($"Service of type {type.Name} is not registered.");
+            }
         }
     }
 }

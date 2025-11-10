@@ -1,7 +1,10 @@
 using UnityEngine;
 
-public enum DiskTypeEnum
+namespace ConnectFourMultiplayer.Disk
 {
-   DiskRed,
-   DiskYellow,
+    public enum DiskTypeEnum
+    {
+        DiskRed,
+        DiskYellow,
+    }
 }

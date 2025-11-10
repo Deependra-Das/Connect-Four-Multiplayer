@@ -1,42 +1,49 @@
+using ConnectFourMultiplayer.Board;
+using ConnectFourMultiplayer.Disk;
+using ConnectFourMultiplayer.Gameplay;
+using ConnectFourMultiplayer.Utilities;
 using UnityEngine;
 
-public class GameManager : GenericMonoSingleton<GameManager>
+namespace ConnectFourMultiplayer.Main
 {
-    [SerializeField] private DiskScriptableObject _disk_SO;
-    [SerializeField] private BoardScriptableObject _board_SO;
-
-    protected override void Awake()
+    public class GameManager : GenericMonoSingleton<GameManager>
     {
-        base.Awake();
-    }
+        [SerializeField] private DiskScriptableObject _disk_SO;
+        [SerializeField] private BoardScriptableObject _board_SO;
 
-    private void Start()
-    {
-        RegisterServices();
-        GameplayManager.Instance.Initialize();
-    }
+        protected override void Awake()
+        {
+            base.Awake();
+        }
 
-    private void RegisterServices()
-    {
-        ServiceLocator.Register(new DiskSpawnService(_disk_SO));
-        ServiceLocator.Register(new BoardService(_board_SO));
-        ServiceLocator.Register(new DiskPreviewService(_disk_SO));
-    }
+        private void Start()
+        {
+            RegisterServices();
+            GameplayManager.Instance.Initialize();
+        }
 
-    private void DeregisterServices()
-    {
-        ServiceLocator.Unregister<DiskSpawnService>();
-        ServiceLocator.Unregister<BoardService>();
-        ServiceLocator.Unregister<DiskPreviewService>();
-    }
+        private void RegisterServices()
+        {
+            ServiceLocator.Register(new DiskSpawnService(_disk_SO));
+            ServiceLocator.Register(new BoardService(_board_SO));
+            ServiceLocator.Register(new DiskPreviewService(_disk_SO));
+        }
 
-    private void OnDestroy()
-    {
-        DeregisterServices();
-    }
+        private void DeregisterServices()
+        {
+            ServiceLocator.Unregister<DiskSpawnService>();
+            ServiceLocator.Unregister<BoardService>();
+            ServiceLocator.Unregister<DiskPreviewService>();
+        }
 
-    public T Get<T>()
-    {
-        return ServiceLocator.Get<T>();
+        private void OnDestroy()
+        {
+            DeregisterServices();
+        }
+
+        public T Get<T>()
+        {
+            return ServiceLocator.Get<T>();
+        }
     }
 }

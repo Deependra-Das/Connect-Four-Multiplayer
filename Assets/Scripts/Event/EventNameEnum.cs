@@ -1,6 +1,9 @@
 using UnityEngine;
 
-public enum EventNameEnum
+namespace ConnectFourMultiplayer.Event
 {
-    TakeTurn
+    public enum EventNameEnum
+    {
+        TakeTurn
+    }
 }
