@@ -1429,6 +1429,7 @@ MonoBehaviour:
   - {fileID: 259538595}
   - {fileID: 415015518}
   - {fileID: 1836495399}
+  _highlightPrefab: {fileID: 952658940207362536, guid: 39681bd96345abc43bd73ff7b4aa5a89, type: 3}
 --- !u!1 &1610813686
 GameObject:
   m_ObjectHideFlags: 0
