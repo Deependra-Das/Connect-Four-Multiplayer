@@ -12,5 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6162a04aaed0024b957094d52696ef2, type: 3}
   m_Name: Disk_SO
   m_EditorClassIdentifier: Assembly-CSharp::DiskScriptableObject
-  disk_red: {fileID: 3958166543198496242, guid: d5cfd08d1bd2cdb49be352fb0f6d3156, type: 3}
-  disk_yellow: {fileID: 8116366107983624768, guid: 753d69a3129ec19438763fc50c7ee105, type: 3}
+  diskRedPrefab: {fileID: 3958166543198496242, guid: d5cfd08d1bd2cdb49be352fb0f6d3156, type: 3}
+  diskYellowPrefab: {fileID: 8116366107983624768, guid: 753d69a3129ec19438763fc50c7ee105, type: 3}
+  diskRedPreviewPrefab: {fileID: 6636096986894122394, guid: 3d16cb0be3139a644a5f5a82dc6c2a31, type: 3}
+  diskYellowPreviewPrefab: {fileID: 428355773328322074, guid: 04e74dc46ac4f1d4fa12c20939ec12ec, type: 3}
