@@ -6,6 +6,7 @@ public class BoardService
     private int[,] _board;
     private int _boardRowCount;
     private int _boardColumnCount;
+    private int _lastAddedCellRow = -1;
 
     public BoardService(BoardScriptableObject boardScriptableObject)
     {
@@ -30,6 +31,7 @@ public class BoardService
             if (_board[row, col] == 0)
             {
                 _board[row, col] = value;
+                _lastAddedCellRow = row;
                 return true;
             }
         }
@@ -52,4 +54,12 @@ public class BoardService
         }
     }
 
+    public int GetBoardCellValue(int row, int col)
+    {
+        return _board[row, col];
+    }
+
+    public int LastAddedCellRow { get { return _lastAddedCellRow; } }
+    public int RowCount { get { return _boardRowCount; } }
+    public int ColumnCount { get { return _boardColumnCount; } }
 }

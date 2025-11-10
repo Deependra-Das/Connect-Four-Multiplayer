@@ -23,13 +23,20 @@ public class GameplayManager : GenericMonoSingleton<GameplayManager>
             {
                 case PlayerTurnEnum.Player1:
                     GameManager.Instance.Get<DiskSpawnService>().SpawnDisk(DiskTypeEnum.DiskRed, _spawnLocations[colIndex].position);
-                    _playerTurn = PlayerTurnEnum.Player2;
                     break;
                 case PlayerTurnEnum.Player2:
                     GameManager.Instance.Get<DiskSpawnService>().SpawnDisk(DiskTypeEnum.DiskYellow, _spawnLocations[colIndex].position);
-                    _playerTurn = PlayerTurnEnum.Player1;
                     break;
             }
+
+            int rowIndex = GameManager.Instance.Get<BoardService>().LastAddedCellRow;
+            if (CheckForWin(rowIndex, colIndex))
+            {
+                HandleWin();
+                return;
+            }
+
+            _playerTurn = (_playerTurn == PlayerTurnEnum.Player1) ? PlayerTurnEnum.Player2 : PlayerTurnEnum.Player1;
         }        
     }
 
@@ -43,4 +50,53 @@ public class GameplayManager : GenericMonoSingleton<GameplayManager>
         GameManager.Instance.Get<DiskPreviewService>().HandleHoverOverColumnDiskPreview(_playerTurn, _spawnLocations[colIndex].position);
     }
 
+    private bool CheckForWin(int rowIndex, int colIndex)
+    {
+        int playerValue = (int)_playerTurn;
+
+        return CheckDirection(rowIndex, colIndex, 0, 1, playerValue) ||
+               CheckDirection(rowIndex, colIndex, 1, 0, playerValue) ||
+               CheckDirection(rowIndex, colIndex, 1, 1, playerValue) ||
+               CheckDirection(rowIndex, colIndex, 1, -1, playerValue);
+    }
+
+    private bool CheckDirection(int row, int col, int dirRow, int dirCol, int playerValue)
+    {
+        int count = 1;
+
+        count += CountConsecutiveDiscs(row, col, dirRow, dirCol, playerValue);
+        count += CountConsecutiveDiscs(row, col, -dirRow, -dirCol, playerValue);
+
+        return count >= 4;
+    }
+
+    private int CountConsecutiveDiscs(int row, int col, int dirRow, int dirCol, int playerValue)
+    {
+        int count = 0;
+        int currentRow = row + dirRow;
+        int currentColumn = col + dirCol;
+        int rowCount = GameManager.Instance.Get<BoardService>().RowCount;
+        int colCount = GameManager.Instance.Get<BoardService>().ColumnCount;
+
+        while (currentRow >= 0 && currentRow < rowCount && currentColumn >= 0 && currentColumn < colCount)
+        {
+            if (GameManager.Instance.Get<BoardService>().GetBoardCellValue(currentRow, currentColumn) == playerValue)
+            {
+                count++;
+                currentRow += dirRow;
+                currentColumn += dirCol;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return count;
+    }
+
+    private void HandleWin()
+    {
+        Debug.Log("Player "+_playerTurn+" Won.");
+    }
 }
