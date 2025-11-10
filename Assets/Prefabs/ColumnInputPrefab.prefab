@@ -75,4 +75,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0c26d8f92543c34abdd4a0241bd55f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ColumnInputManager
+  boxCollider: {fileID: 1830550582906186044}
   _columnIndex: 0

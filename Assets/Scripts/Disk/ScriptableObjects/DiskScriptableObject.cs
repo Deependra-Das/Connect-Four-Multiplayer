@@ -3,6 +3,8 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "DiskScriptableObject", menuName = "ScriptableObjects/DiskScriptableObject")]
 public class DiskScriptableObject : ScriptableObject
 {
-    public GameObject disk_red;
-    public GameObject disk_yellow;
+    public GameObject diskRedPrefab;
+    public GameObject diskYellowPrefab;
+    public GameObject diskRedPreviewPrefab;
+    public GameObject diskYellowPreviewPrefab;
 }

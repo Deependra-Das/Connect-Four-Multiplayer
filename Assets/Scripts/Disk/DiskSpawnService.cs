@@ -20,10 +20,10 @@ public class DiskSpawnService
         switch(diskType)
         {
             case DiskTypeEnum.DiskRed:
-                newDisk = GameObject.Instantiate(_disk_SO.disk_red, spawnLocation, Quaternion.identity);
+                newDisk = GameObject.Instantiate(_disk_SO.diskRedPrefab, spawnLocation, Quaternion.identity);
                 break;
             case DiskTypeEnum.DiskYellow:
-                newDisk = GameObject.Instantiate(_disk_SO.disk_yellow, spawnLocation, Quaternion.identity);
+                newDisk = GameObject.Instantiate(_disk_SO.diskYellowPrefab, spawnLocation, Quaternion.identity);
                 break;
             default:
                 newDisk = null;

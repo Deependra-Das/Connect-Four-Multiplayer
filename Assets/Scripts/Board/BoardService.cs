@@ -30,7 +30,6 @@ public class BoardService
             if (_board[row, col] == 0)
             {
                 _board[row, col] = value;
-                PrintBoardLog();
                 return true;
             }
         }
