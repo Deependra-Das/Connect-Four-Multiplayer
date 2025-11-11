@@ -12,7 +12,7 @@ public class MainMenuUIManager : MonoBehaviour
     [SerializeField] private Button _hostGameButton;
     [SerializeField] private Button _joinGameButton;
     [SerializeField] private Button _howToPlayButton;
-    [SerializeField] private Button _quitGameButtonPrefab;
+    [SerializeField] private Button _quitGameButton;
 
     private const int _minUserNameLength = 3;
     private const int _maxUserNameLength = 15;
@@ -27,7 +27,7 @@ public class MainMenuUIManager : MonoBehaviour
         _hostGameButton.onClick.AddListener(OnHostGameButtonClicked);
         _joinGameButton.onClick.AddListener(OnJoinGameButtonClicked);
         _howToPlayButton.onClick.AddListener(OnHowToPlayButonClicked);
-        _quitGameButtonPrefab.onClick.AddListener(OnQuitGameButtonClicked);
+        _quitGameButton.onClick.AddListener(OnQuitGameButtonClicked);
         _changeUsernameButton.onClick.AddListener(OnChangeUsernameButtonClicked);
     }
 
@@ -36,7 +36,7 @@ public class MainMenuUIManager : MonoBehaviour
         _hostGameButton.onClick.RemoveListener(OnHostGameButtonClicked);
         _joinGameButton.onClick.RemoveListener(OnJoinGameButtonClicked);    
         _howToPlayButton.onClick.RemoveListener(OnHowToPlayButonClicked);
-        _quitGameButtonPrefab.onClick.RemoveListener(OnQuitGameButtonClicked);
+        _quitGameButton.onClick.RemoveListener(OnQuitGameButtonClicked);
         _changeUsernameButton.onClick.RemoveListener(OnChangeUsernameButtonClicked);
     }
 
