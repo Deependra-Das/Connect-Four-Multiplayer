@@ -27,6 +27,7 @@ namespace ConnectFourMultiplayer.Gameplay
             InitializeSpawnedDiskMatrix(_rowCount, _colCount);
             GameManager.Instance.Get<DiskPreviewService>().Initialize(_spawnLocations[0].position);
             _playerTurn = PlayerTurnEnum.Player1;
+            EventBusManager.Instance.Raise(EventNameEnum.ChangePlayerTurn, _playerTurn, 0f);
         }
 
         public void TakeTurn(int colIndex)
@@ -55,8 +56,14 @@ namespace ConnectFourMultiplayer.Gameplay
                     return;
                 }
 
-                _playerTurn = (_playerTurn == PlayerTurnEnum.Player1) ? PlayerTurnEnum.Player2 : PlayerTurnEnum.Player1;
+                ChangePlayerTurn();
             }
+        }
+
+        private void ChangePlayerTurn()
+        {
+            _playerTurn = (_playerTurn == PlayerTurnEnum.Player1) ? PlayerTurnEnum.Player2 : PlayerTurnEnum.Player1;
+            EventBusManager.Instance.Raise(EventNameEnum.ChangePlayerTurn, _playerTurn, 2f);
         }
 
         private void AddSpawnedDiskInMatrix(GameObject newDiskSpawned, int rowIndex, int colIndex)
