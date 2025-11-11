@@ -2,14 +2,13 @@ using ConnectFourMultiplayer.Board;
 using ConnectFourMultiplayer.Disk;
 using ConnectFourMultiplayer.Event;
 using ConnectFourMultiplayer.Main;
-using ConnectFourMultiplayer.Utilities;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace ConnectFourMultiplayer.Gameplay
 {
-    public class GameplayManager : GenericMonoSingleton<GameplayManager>
+    public class GameplayManager : MonoBehaviour
     {
         [SerializeField] private Transform[] _spawnLocations;
         [SerializeField] private GameObject _highlightPrefab;
@@ -19,6 +18,19 @@ namespace ConnectFourMultiplayer.Gameplay
         private int _rowCount = 0;
         private int _colCount = 0;
         private bool _isGameOver = false;
+
+        public static GameplayManager Instance { get; private set; }
+
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+        }
 
         private void OnEnable() => SubscribeToEvents();
 
@@ -109,7 +121,7 @@ namespace ConnectFourMultiplayer.Gameplay
                 _isGameOver = true;
                 EventBusManager.Instance.Raise(EventNameEnum.GameOver, _playerTurn);
                 StartCoroutine(HighlightWinningDiscs(winningDiscs));
-                StartCoroutine(LoadGameOverScene(5f));
+                StartCoroutine(HandleGameOverStateChange(5f));
             }
         }
 
@@ -169,7 +181,7 @@ namespace ConnectFourMultiplayer.Gameplay
             return spawnedDisks[row, col].gameObject.transform.position;
         }
 
-        private IEnumerator LoadGameOverScene(float waitDuration)
+        private IEnumerator HandleGameOverStateChange(float waitDuration)
         {
             yield return new WaitForSeconds(waitDuration);
             ServiceLocator.Get<GameStateService>().ChangeState(GameStateEnum.GameOver);
@@ -180,7 +192,7 @@ namespace ConnectFourMultiplayer.Gameplay
             PlayerTurnEnum winnerPlayer = (_playerTurn == PlayerTurnEnum.Player1) ? PlayerTurnEnum.Player2 : PlayerTurnEnum.Player1;
             _isGameOver = true;
             EventBusManager.Instance.Raise(EventNameEnum.GameOver, winnerPlayer);
-            StartCoroutine(LoadGameOverScene(3f));
+            StartCoroutine(HandleGameOverStateChange(3f));
         }
     }
 }
