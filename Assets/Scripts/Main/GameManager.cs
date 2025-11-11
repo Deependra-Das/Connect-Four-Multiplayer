@@ -18,10 +18,12 @@ namespace ConnectFourMultiplayer.Main
         private void Start()
         {
             RegisterServices();
+            ServiceLocator.Get<GameStateService>().ChangeState(GameStateEnum.MainMenu);
         }
 
         private void RegisterServices()
         {
+            ServiceLocator.Register(new GameStateService());
             ServiceLocator.Register(new DiskSpawnService(_disk_SO));
             ServiceLocator.Register(new BoardService(_board_SO));
             ServiceLocator.Register(new DiskPreviewService(_disk_SO));
@@ -32,6 +34,7 @@ namespace ConnectFourMultiplayer.Main
             ServiceLocator.Unregister<DiskSpawnService>();
             ServiceLocator.Unregister<BoardService>();
             ServiceLocator.Unregister<DiskPreviewService>();
+            ServiceLocator.Unregister<GameStateService>();
         }
 
         private void OnDestroy()
