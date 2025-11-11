@@ -2,14 +2,13 @@ using ConnectFourMultiplayer.Board;
 using ConnectFourMultiplayer.Disk;
 using ConnectFourMultiplayer.Event;
 using ConnectFourMultiplayer.Main;
-using ConnectFourMultiplayer.Utilities;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace ConnectFourMultiplayer.Gameplay
 {
-    public class GameplayManager : GenericMonoSingleton<GameplayManager>
+    public class GameplayManager : MonoBehaviour
     {
         [SerializeField] private Transform[] _spawnLocations;
         [SerializeField] private GameObject _highlightPrefab;
@@ -18,8 +17,36 @@ namespace ConnectFourMultiplayer.Gameplay
         private GameObject[,] spawnedDisks;
         private int _rowCount = 0;
         private int _colCount = 0;
+        private bool _isGameOver = false;
 
-        public void Initialize()
+        public static GameplayManager Instance { get; private set; }
+
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+        }
+
+        private void OnEnable() => SubscribeToEvents();
+
+        private void OnDisable() => UnsubscribeToEvents();
+
+        private void SubscribeToEvents()
+        {
+            EventBusManager.Instance.Subscribe(EventNameEnum.PlayerGiveUp, HandlePlayerGiveUpGameplay);
+        }
+
+        private void UnsubscribeToEvents()
+        {
+            EventBusManager.Instance.Unsubscribe(EventNameEnum.PlayerGiveUp, HandlePlayerGiveUpGameplay);
+        }
+
+        private void Start()
         {
             GameManager.Instance.Get<BoardService>().InitializeBoard();
             _rowCount = GameManager.Instance.Get<BoardService>().RowCount;
@@ -27,10 +54,13 @@ namespace ConnectFourMultiplayer.Gameplay
             InitializeSpawnedDiskMatrix(_rowCount, _colCount);
             GameManager.Instance.Get<DiskPreviewService>().Initialize(_spawnLocations[0].position);
             _playerTurn = PlayerTurnEnum.Player1;
+            EventBusManager.Instance.Raise(EventNameEnum.ChangePlayerTurn, _playerTurn, 0f);
         }
 
         public void TakeTurn(int colIndex)
         {
+            if (_isGameOver) return;
+
             if (UpdateBoardState(colIndex, (int)_playerTurn))
             {
                 EventBusManager.Instance.Raise(EventNameEnum.TakeTurn, _playerTurn);
@@ -49,14 +79,15 @@ namespace ConnectFourMultiplayer.Gameplay
                 int rowIndex = GameManager.Instance.Get<BoardService>().LastAddedCellRow;
                 AddSpawnedDiskInMatrix(newDiskSpawned, rowIndex, colIndex);
 
-                if (CheckForWin(rowIndex, colIndex))
-                {
-                    HandleWin();
-                    return;
-                }
-
-                _playerTurn = (_playerTurn == PlayerTurnEnum.Player1) ? PlayerTurnEnum.Player2 : PlayerTurnEnum.Player1;
+                CheckForWin(rowIndex, colIndex);
+                if(!_isGameOver) ChangePlayerTurn();
             }
+        }
+
+        private void ChangePlayerTurn()
+        {
+            _playerTurn = (_playerTurn == PlayerTurnEnum.Player1) ? PlayerTurnEnum.Player2 : PlayerTurnEnum.Player1;
+            EventBusManager.Instance.Raise(EventNameEnum.ChangePlayerTurn, _playerTurn, 2f);
         }
 
         private void AddSpawnedDiskInMatrix(GameObject newDiskSpawned, int rowIndex, int colIndex)
@@ -74,7 +105,7 @@ namespace ConnectFourMultiplayer.Gameplay
             GameManager.Instance.Get<DiskPreviewService>().HandleHoverOverColumnDiskPreview(_playerTurn, _spawnLocations[colIndex].position);
         }
 
-        private bool CheckForWin(int rowIndex, int colIndex)
+        private void CheckForWin(int rowIndex, int colIndex)
         {
             int playerValue = (int)_playerTurn;
             List<Vector2Int> winningDiscs = new List<Vector2Int>();
@@ -87,10 +118,11 @@ namespace ConnectFourMultiplayer.Gameplay
             if (win)
             {
                 winningDiscs.Add(new Vector2Int(rowIndex, colIndex));
+                _isGameOver = true;
+                EventBusManager.Instance.Raise(EventNameEnum.GameOver, _playerTurn);
                 StartCoroutine(HighlightWinningDiscs(winningDiscs));
+                StartCoroutine(HandleGameOverStateChange(5f));
             }
-
-            return win;
         }
 
         private bool CheckDirection(int row, int col, int dirRow, int dirCol, int playerValue, List<Vector2Int> winningDiscs)
@@ -139,11 +171,6 @@ namespace ConnectFourMultiplayer.Gameplay
             }
         }
 
-        private void HandleWin()
-        {
-            Debug.Log("Player " + _playerTurn + " Won.");
-        }
-
         public void InitializeSpawnedDiskMatrix(int rowCount, int colCount)
         {
             spawnedDisks = new GameObject[rowCount, colCount];
@@ -152,6 +179,20 @@ namespace ConnectFourMultiplayer.Gameplay
         public Vector3 GetDiskPosition(int row, int col)
         {
             return spawnedDisks[row, col].gameObject.transform.position;
+        }
+
+        private IEnumerator HandleGameOverStateChange(float waitDuration)
+        {
+            yield return new WaitForSeconds(waitDuration);
+            GameManager.Instance.Get<GameStateService>().ChangeState(GameStateEnum.GameOver);
+        }
+
+        private void HandlePlayerGiveUpGameplay(object[] parameters)
+        {
+            PlayerTurnEnum winnerPlayer = (_playerTurn == PlayerTurnEnum.Player1) ? PlayerTurnEnum.Player2 : PlayerTurnEnum.Player1;
+            _isGameOver = true;
+            EventBusManager.Instance.Raise(EventNameEnum.GameOver, winnerPlayer);
+            StartCoroutine(HandleGameOverStateChange(3f));
         }
     }
 }

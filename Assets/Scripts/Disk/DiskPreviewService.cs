@@ -31,11 +31,13 @@ namespace ConnectFourMultiplayer.Disk
         private void SubscribeToEvents()
         {
             EventBusManager.Instance.Subscribe(EventNameEnum.TakeTurn, HandleTakeTurnDiskPreview);
+            EventBusManager.Instance.Subscribe(EventNameEnum.GameOver, HandleGameOverDiskPreview);
         }
 
         private void UnsubscribeToEvents()
         {
             EventBusManager.Instance.Unsubscribe(EventNameEnum.TakeTurn, HandleTakeTurnDiskPreview);
+            EventBusManager.Instance.Unsubscribe(EventNameEnum.GameOver, HandleGameOverDiskPreview);
         }
 
         public void Initialize(Vector3 spawnLocation)
@@ -75,6 +77,11 @@ namespace ConnectFourMultiplayer.Disk
         }
 
         private void HandleTakeTurnDiskPreview(object[] parameters)
+        {
+            ToggleDiskRedPreview(false);
+            ToggleDiskYellowPreview(false);
+        }
+        private void HandleGameOverDiskPreview(object[] parameters)
         {
             ToggleDiskRedPreview(false);
             ToggleDiskYellowPreview(false);

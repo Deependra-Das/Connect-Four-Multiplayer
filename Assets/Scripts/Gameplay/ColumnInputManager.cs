@@ -10,15 +10,19 @@ namespace ConnectFourMultiplayer.Gameplay
         [SerializeField] private int _columnIndex;
         [SerializeField] private float _cooldownTime = 3f;
         private bool _cooldownActive = false;
+        private bool _isGameOVer = false;
+
 
         private void OnEnable()
         {
             EventBusManager.Instance.Subscribe(EventNameEnum.TakeTurn, HandleTakeTurnColumnInput);
+            EventBusManager.Instance.Subscribe(EventNameEnum.GameOver, HandleGameOverColumnInput);
         }
 
         private void OnDisable()
         {
             EventBusManager.Instance.Unsubscribe(EventNameEnum.TakeTurn, HandleTakeTurnColumnInput);
+            EventBusManager.Instance.Unsubscribe(EventNameEnum.GameOver, HandleGameOverColumnInput);
         }
 
         private void OnMouseDown()
@@ -33,7 +37,7 @@ namespace ConnectFourMultiplayer.Gameplay
 
         private void OnMouseOver()
         {
-            if (!_cooldownActive)
+            if (!_cooldownActive && !_isGameOVer)
             {
                 GameplayManager.Instance.OnHoverOverColumn(_columnIndex);
             }
@@ -60,6 +64,11 @@ namespace ConnectFourMultiplayer.Gameplay
             {
                 GetComponent<Collider>().enabled = state;
             }
+        }
+
+        private void HandleGameOverColumnInput(object[] parameters)
+        {
+            _isGameOVer = true;
         }
     }
 }

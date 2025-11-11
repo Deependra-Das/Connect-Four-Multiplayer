@@ -4,6 +4,10 @@ namespace ConnectFourMultiplayer.Event
 {
     public enum EventNameEnum
     {
-        TakeTurn
+        ChangeGameState,
+        TakeTurn,
+        ChangePlayerTurn,
+        GameOver,
+        PlayerGiveUp,
     }
 }

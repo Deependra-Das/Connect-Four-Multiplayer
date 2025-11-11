@@ -1,6 +1,5 @@
 using ConnectFourMultiplayer.Board;
 using ConnectFourMultiplayer.Disk;
-using ConnectFourMultiplayer.Gameplay;
 using ConnectFourMultiplayer.Utilities;
 using UnityEngine;
 
@@ -11,19 +10,19 @@ namespace ConnectFourMultiplayer.Main
         [SerializeField] private DiskScriptableObject _disk_SO;
         [SerializeField] private BoardScriptableObject _board_SO;
 
-        protected override void Awake()
-        {
-            base.Awake();
-        }
+        public const string UsernameKey = "Username";
+
 
         private void Start()
         {
             RegisterServices();
-            GameplayManager.Instance.Initialize();
+            ServiceLocator.Get<GameStateService>().ChangeState(GameStateEnum.MainMenu);
         }
 
         private void RegisterServices()
         {
+            ServiceLocator.Register(new CleanUpService());
+            ServiceLocator.Register(new GameStateService());
             ServiceLocator.Register(new DiskSpawnService(_disk_SO));
             ServiceLocator.Register(new BoardService(_board_SO));
             ServiceLocator.Register(new DiskPreviewService(_disk_SO));
@@ -34,11 +33,8 @@ namespace ConnectFourMultiplayer.Main
             ServiceLocator.Unregister<DiskSpawnService>();
             ServiceLocator.Unregister<BoardService>();
             ServiceLocator.Unregister<DiskPreviewService>();
-        }
-
-        private void OnDestroy()
-        {
-            DeregisterServices();
+            ServiceLocator.Unregister<GameStateService>();
+            ServiceLocator.Unregister<CleanUpService>();
         }
 
         public T Get<T>()
