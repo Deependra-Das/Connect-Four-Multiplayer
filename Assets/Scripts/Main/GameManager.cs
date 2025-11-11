@@ -1,6 +1,5 @@
 using ConnectFourMultiplayer.Board;
 using ConnectFourMultiplayer.Disk;
-using ConnectFourMultiplayer.Gameplay;
 using ConnectFourMultiplayer.Utilities;
 using UnityEngine;
 
@@ -19,7 +18,6 @@ namespace ConnectFourMultiplayer.Main
         private void Start()
         {
             RegisterServices();
-            GameplayManager.Instance.Initialize();
         }
 
         private void RegisterServices()
