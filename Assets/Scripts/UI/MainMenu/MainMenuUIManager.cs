@@ -76,12 +76,12 @@ public class MainMenuUIManager : MonoBehaviour
 
     private void OnHostGameButtonClicked()
     {
-        SceneLoader.Instance.LoadScene(SceneNameEnum.LobbyScene, false);
+        GameManager.Instance.Get<GameStateService>().ChangeState(GameStateEnum.Lobby);
     }
 
     private void OnJoinGameButtonClicked()
     {
-        SceneLoader.Instance.LoadScene(SceneNameEnum.LobbyScene, false);
+        GameManager.Instance.Get<GameStateService>().ChangeState(GameStateEnum.Lobby);
     }
 
     private void OnQuitGameButtonClicked()

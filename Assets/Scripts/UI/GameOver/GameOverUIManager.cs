@@ -37,6 +37,6 @@ public class GameOverUIManager : MonoBehaviour
             yield return new WaitForSeconds(1f);
         }
 
-        ServiceLocator.Get<GameStateService>().ChangeState(GameStateEnum.MainMenu);
+        GameManager.Instance.Get<GameStateService>().ChangeState(GameStateEnum.MainMenu);
     }
 }
