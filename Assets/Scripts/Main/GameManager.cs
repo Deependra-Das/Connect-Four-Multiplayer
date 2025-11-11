@@ -10,6 +10,8 @@ namespace ConnectFourMultiplayer.Main
         [SerializeField] private DiskScriptableObject _disk_SO;
         [SerializeField] private BoardScriptableObject _board_SO;
 
+        public const string UsernameKey = "Username";
+
         protected override void Awake()
         {
             base.Awake();
