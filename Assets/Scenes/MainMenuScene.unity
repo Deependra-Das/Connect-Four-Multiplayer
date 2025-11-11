@@ -1768,7 +1768,7 @@ MonoBehaviour:
   _hostGameButton: {fileID: 826566878}
   _joinGameButton: {fileID: 1596836659}
   _howToPlayButton: {fileID: 2097557380}
-  _quitGameButtonPrefab: {fileID: 777784406}
+  _quitGameButton: {fileID: 777784406}
 --- !u!1 &892734686
 GameObject:
   m_ObjectHideFlags: 0
