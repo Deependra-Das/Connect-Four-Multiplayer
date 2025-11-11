@@ -1,3 +1,4 @@
+using ConnectFourMultiplayer.Event;
 using System;
 using UnityEngine;
 
@@ -8,17 +9,11 @@ namespace ConnectFourMultiplayer.Main
         private GameStateEnum _currentState = GameStateEnum.MainMenu;
         public GameStateEnum CurrentState => _currentState;
 
-        public event Action<GameStateEnum> OnGameStateChanged;
-
         public void ChangeState(GameStateEnum newState)
         {
             if (_currentState == newState)
                 return;
-
-            Debug.Log($"[GameStateService] Changing state from {_currentState} to {newState}");
             _currentState = newState;
-            OnGameStateChanged?.Invoke(_currentState);
-
             HandleSceneChange(newState);
         }
 
@@ -39,6 +34,8 @@ namespace ConnectFourMultiplayer.Main
                     SceneLoader.Instance.LoadScene(SceneNameEnum.GameOverScene, false);
                     break;
             }
+
+            EventBusManager.Instance.Raise(EventNameEnum.ChangeGameState, _currentState);
         }
     }
 }

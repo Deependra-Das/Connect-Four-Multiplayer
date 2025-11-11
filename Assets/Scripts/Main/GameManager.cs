@@ -12,10 +12,6 @@ namespace ConnectFourMultiplayer.Main
 
         public const string UsernameKey = "Username";
 
-        protected override void Awake()
-        {
-            base.Awake();
-        }
 
         private void Start()
         {
@@ -25,6 +21,7 @@ namespace ConnectFourMultiplayer.Main
 
         private void RegisterServices()
         {
+            ServiceLocator.Register(new CleanUpService());
             ServiceLocator.Register(new GameStateService());
             ServiceLocator.Register(new DiskSpawnService(_disk_SO));
             ServiceLocator.Register(new BoardService(_board_SO));
@@ -37,11 +34,7 @@ namespace ConnectFourMultiplayer.Main
             ServiceLocator.Unregister<BoardService>();
             ServiceLocator.Unregister<DiskPreviewService>();
             ServiceLocator.Unregister<GameStateService>();
-        }
-
-        private void OnDestroy()
-        {
-            DeregisterServices();
+            ServiceLocator.Unregister<CleanUpService>();
         }
 
         public T Get<T>()
