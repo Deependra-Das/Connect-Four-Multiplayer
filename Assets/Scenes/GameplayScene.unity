@@ -785,8 +785,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameplayUIManager
   _p1UsernameText: {fileID: 1602970050}
   _p2UsernameText: {fileID: 974215157}
-  _playerTurnPanel: {fileID: 2057255058}
-  _playerTurnText: {fileID: 1771929286}
+  _gameplayNotificationPanel: {fileID: 2057255058}
+  _playerNotificationText: {fileID: 1771929286}
   _giveUpButton: {fileID: 1830115917}
   _slideDuration: 0.5
   _offsetY: 60
@@ -2499,7 +2499,7 @@ GameObject:
   - component: {fileID: 1771929287}
   - component: {fileID: 1771929286}
   m_Layer: 5
-  m_Name: PlayerText
+  m_Name: PlayerNotificationText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3223,7 +3223,7 @@ GameObject:
   - component: {fileID: 2057255061}
   - component: {fileID: 2057255060}
   m_Layer: 5
-  m_Name: PlayerTurnContainer
+  m_Name: GameplayNotificationContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
