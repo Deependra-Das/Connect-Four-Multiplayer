@@ -19,7 +19,7 @@ namespace ConnectFourMultiplayer.Gameplay
         private int _rowCount = 0;
         private int _colCount = 0;
 
-        public void Initialize()
+        private void Start()
         {
             GameManager.Instance.Get<BoardService>().InitializeBoard();
             _rowCount = GameManager.Instance.Get<BoardService>().RowCount;
