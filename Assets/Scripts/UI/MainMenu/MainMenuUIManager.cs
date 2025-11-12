@@ -1,3 +1,4 @@
+using BattleRoyale.LobbyModule;
 using ConnectFourMultiplayer.Main;
 using System.Text.RegularExpressions;
 using TMPro;
@@ -76,12 +77,12 @@ public class MainMenuUIManager : MonoBehaviour
 
     private void OnHostGameButtonClicked()
     {
-        GameManager.Instance.Get<GameStateService>().ChangeState(GameStateEnum.Lobby);
+        LobbyManager.Instance.CreateLobby();
     }
 
     private void OnJoinGameButtonClicked()
     {
-        GameManager.Instance.Get<GameStateService>().ChangeState(GameStateEnum.Lobby);
+        LobbyManager.Instance.QuickJoin();
     }
 
     private void OnQuitGameButtonClicked()
