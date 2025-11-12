@@ -184,7 +184,7 @@ namespace ConnectFourMultiplayer.Gameplay
         private IEnumerator HandleGameOverStateChange(float waitDuration)
         {
             yield return new WaitForSeconds(waitDuration);
-            GameManager.Instance.Get<GameStateService>().ChangeState(GameStateEnum.GameOver);
+            SceneLoader.Instance.LoadScene(SceneNameEnum.GameOverScene, true);
         }
 
         private void HandlePlayerGiveUpGameplay(object[] parameters)

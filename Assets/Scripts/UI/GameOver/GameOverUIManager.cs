@@ -1,7 +1,6 @@
 using ConnectFourMultiplayer.Main;
 using System.Collections;
 using TMPro;
-using UnityEditor.Search;
 using UnityEngine;
 
 public class GameOverUIManager : MonoBehaviour
@@ -37,6 +36,6 @@ public class GameOverUIManager : MonoBehaviour
             yield return new WaitForSeconds(1f);
         }
 
-        GameManager.Instance.Get<GameStateService>().ChangeState(GameStateEnum.MainMenu);
+        SceneLoader.Instance.LoadScene(SceneNameEnum.MainMenuScene, false);
     }
 }

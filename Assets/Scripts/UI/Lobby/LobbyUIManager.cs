@@ -50,7 +50,7 @@ public class LobbyUIManager : MonoBehaviour
         _readyButton.gameObject.SetActive(false);
         _notReadyButton.gameObject.SetActive(true);
 
-        GameManager.Instance.Get<GameStateService>().ChangeState(GameStateEnum.Gameplay);
+        SceneLoader.Instance.LoadScene(SceneNameEnum.GameplayScene, true);
     }
 
     private void OnNotReadyButtonClicked()
@@ -72,7 +72,7 @@ public class LobbyUIManager : MonoBehaviour
     private void OnYesButtonClicked()
     {
         HideBackToMainMenuConfirmationPopup();
-        GameManager.Instance.Get<GameStateService>().ChangeState(GameStateEnum.MainMenu);
+        SceneLoader.Instance.LoadScene(SceneNameEnum.MainMenuScene, false);
     }
 
     private void OnNoButtonClicked()

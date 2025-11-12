@@ -1,5 +1,6 @@
 using ConnectFourMultiplayer.Utilities;
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -16,11 +17,11 @@ namespace ConnectFourMultiplayer.Main
         {
             if (isNetworked)
             {
-                //if (NetworkManager.Singleton == null) return;
+                if (NetworkManager.Singleton == null) return;
 
-                //if (!NetworkManager.Singleton.IsServer) return;
+                if (!NetworkManager.Singleton.IsServer) return;
 
-                //NetworkManager.Singleton.SceneManager.LoadScene(sceneName.ToString(), mode);
+                NetworkManager.Singleton.SceneManager.LoadScene(sceneName.ToString(), mode);
             }
             else
             {
