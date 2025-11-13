@@ -2,6 +2,7 @@ using ConnectFourMultiplayer.Event;
 using ConnectFourMultiplayer.Main;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
@@ -115,7 +116,7 @@ namespace BattleRoyale.LobbyModule
 
         public async void CreateLobby()
         {
-            string lobbyName = "TestLobby2";
+            string lobbyName = GenerateRandomLobbyName();
             int lobbySize = 2;
             bool isPrivate = false;
 
@@ -212,6 +213,21 @@ namespace BattleRoyale.LobbyModule
             }
 
             return null;
+        }
+        private string GenerateRandomLobbyName()
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+            int nameLength = UnityEngine.Random.Range(3, 17);
+
+            StringBuilder randomName = new StringBuilder(nameLength);
+
+            for (int i = 0; i < nameLength; i++)
+            {
+                randomName.Append(chars[UnityEngine.Random.Range(0, chars.Length)]);
+            }
+
+            return randomName.ToString();
         }
     }
 }
