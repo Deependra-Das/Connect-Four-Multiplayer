@@ -1,3 +1,4 @@
+using ConnectFourMultiplayer.Event;
 using ConnectFourMultiplayer.Main;
 using Unity.Netcode;
 using UnityEngine;
@@ -16,33 +17,14 @@ public class PlayerSessionDataManager : NetworkBehaviour
         playerSessionDataNetworkList = new NetworkList<PlayerSessionData>();
     }
 
-    public void OnEnable()
+    private void OnEnable()
     {
-        playerSessionDataNetworkList.OnListChanged += OnPlayerListChanged;
+        playerSessionDataNetworkList.OnListChanged += OnplayerSessionDataNetworkListChanged;
     }
 
     private void OnDisable()
     {
-        if (playerSessionDataNetworkList != null)
-        {
-            playerSessionDataNetworkList.OnListChanged -= OnPlayerListChanged;
-        }
-    }
-
-    private void OnPlayerListChanged(NetworkListEvent<PlayerSessionData> changeEvent)
-    {
-        if (playerSessionDataNetworkList != null)
-        {
-            PrintPlayerSessionDataList();
-        }
-    }
-
-    public void PrintPlayerSessionDataList()
-    {
-        foreach (var playerData in playerSessionDataNetworkList)
-        {
-            Debug.Log($"ClientId: {playerData.clientId}, Username: {playerData.username}, Wins: {playerData.winsCount}");
-        }
+        playerSessionDataNetworkList.OnListChanged -= OnplayerSessionDataNetworkListChanged;
     }
 
     public void RegisterPlayerSessionData(ulong clientId, string playerId, string username, int winsCount)
@@ -65,5 +47,38 @@ public class PlayerSessionDataManager : NetworkBehaviour
             }
         }
     }
+
+    public PlayerSessionData GetPlayerSessionData(ulong clientId)
+    {
+        foreach (var sessionData in playerSessionDataNetworkList)
+        {
+            if (sessionData.clientId == clientId)
+            {
+                return sessionData;
+            }
+        }
+        return default;
+    }
+
+    private void OnplayerSessionDataNetworkListChanged(NetworkListEvent<PlayerSessionData> changeEvent)
+    {
+        switch (changeEvent.Type)
+        {
+            case NetworkListEvent<PlayerSessionData>.EventType.Add:
+                HandlePlayerJoined(changeEvent.Value);
+                break;
+
+            default:
+                break;
+        }
+
+        EventBusManager.Instance.Raise(EventNameEnum.PlayerJoined);
+    }
+
+    private void HandlePlayerJoined(PlayerSessionData playerData)
+    {
+        EventBusManager.Instance.Raise(EventNameEnum.PlayerJoined, playerData.clientId);
+    }
+
 }
 

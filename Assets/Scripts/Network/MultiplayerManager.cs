@@ -1,3 +1,4 @@
+using ConnectFourMultiplayer.Event;
 using ConnectFourMultiplayer.Main;
 using System;
 using Unity.Netcode;
@@ -66,11 +67,6 @@ public class MultiplayerManager : NetworkBehaviour
 
         string activeSceneName = SceneManager.GetActiveScene().name.ToString();
         Enum.TryParse<SceneNameEnum>(activeSceneName, out var sceneEnumValue);
-
-        if (sceneEnumValue == SceneNameEnum.LobbyScene)
-        {
-         //Play Player Joined Audio
-        }
     }
 
     private void OnClientHostDisconnected(ulong clientId)
@@ -83,7 +79,9 @@ public class MultiplayerManager : NetworkBehaviour
             //Play Player Left Audio
         }
 
-        RequestPlayerDeregistration(clientId);        
+        RequestPlayerDeregistration(clientId);
+        EventBusManager.Instance.Raise(EventNameEnum.PlayerLeft, clientId);
+
 
         if (!NetworkManager.Singleton.IsServer && sceneEnumValue == SceneNameEnum.GameplayScene)
         {
@@ -94,7 +92,6 @@ public class MultiplayerManager : NetworkBehaviour
     [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
     public void RequestPlayerRegistrationServerRpc(ulong clientId, string playerId, string username)
     {
-        Debug.Log($"ClientId: {clientId}, Username: {username},");
         PlayerSessionDataManager.Instance.RegisterPlayerSessionData(clientId, playerId, username, 0);
     }
 
