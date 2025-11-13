@@ -1,5 +1,5 @@
-using BattleRoyale.LobbyModule;
 using ConnectFourMultiplayer.Main;
+using ConnectFourMultiplayer.Network;
 using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
