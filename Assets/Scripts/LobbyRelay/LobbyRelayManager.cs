@@ -1,6 +1,6 @@
 using ConnectFourMultiplayer.Event;
 using ConnectFourMultiplayer.Main;
-using System;
+using ConnectFourMultiplayer.Network;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,11 +14,11 @@ using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
 
-namespace BattleRoyale.LobbyModule
+namespace ConnectFourMultiplayer.LobbyRelay
 {
-    public class LobbyManager : MonoBehaviour
+    public class LobbyRelayManager : MonoBehaviour
     {
-        public static LobbyManager Instance { get; private set; }
+        public static LobbyRelayManager Instance { get; private set; }
 
         private const string KEY_RELAY_JOIN_CODE = "RelayJoinCode";
         private Lobby _joinedLobby;
