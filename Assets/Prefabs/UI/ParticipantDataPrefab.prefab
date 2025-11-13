@@ -724,8 +724,9 @@ GameObject:
   m_Component:
   - component: {fileID: 87489320258070306}
   - component: {fileID: 6649640079990419808}
+  - component: {fileID: 8143367482437831576}
   m_Layer: 5
-  m_Name: ParticipantData
+  m_Name: ParticipantDataPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -779,6 +780,22 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &8143367482437831576
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5275210752674333147}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec9ded1e0ef82dd4a9f3a37bcb5df196, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LobbyParticipantUIManager
+  _usernameText: {fileID: 6205246081899330628}
+  _winsCountText: {fileID: 5632522426878932505}
+  _readyPanel: {fileID: 5621617341954741224}
+  _notReadyPanel: {fileID: 8625849455215700330}
 --- !u!1 &5621617341954741224
 GameObject:
   m_ObjectHideFlags: 0
