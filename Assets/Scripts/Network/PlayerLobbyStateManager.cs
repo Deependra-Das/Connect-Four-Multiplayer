@@ -1,4 +1,5 @@
 using ConnectFourMultiplayer.Event;
+using ConnectFourMultiplayer.LobbyRelay;
 using ConnectFourMultiplayer.Main;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -78,7 +79,7 @@ namespace ConnectFourMultiplayer.Network
 
                 if (allClientsReady)
                 {
-                    LobbyManager.Instance.DeleteLobby();
+                    LobbyRelayManager.Instance.DeleteLobby();
                     SceneLoader.Instance.LoadScene(SceneNameEnum.GameplayScene, true);
                 }
             }

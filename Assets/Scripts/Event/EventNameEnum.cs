@@ -11,6 +11,7 @@ namespace ConnectFourMultiplayer.Event
         QuickJoinFailed,
         PlayerJoined,
         PlayerLeft,
+        PlayerLobbyStateChanged,
         TakeTurn,
         ChangePlayerTurn,
         GameOver,

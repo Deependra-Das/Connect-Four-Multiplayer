@@ -1,84 +1,103 @@
 using ConnectFourMultiplayer.Event;
-using ConnectFourMultiplayer.Main;
 using Unity.Netcode;
 using UnityEngine;
 
-public class PlayerSessionDataManager : NetworkBehaviour
+namespace ConnectFourMultiplayer.Network
 {
-    public static PlayerSessionDataManager Instance { get; private set; }
-
-    public NetworkList<PlayerSessionData> playerSessionDataNetworkList;
-
-    private void Awake()
+    public class PlayerSessionDataManager : NetworkBehaviour
     {
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
+        public static PlayerSessionDataManager Instance { get; private set; }
 
-        playerSessionDataNetworkList = new NetworkList<PlayerSessionData>();
-    }
+        public NetworkList<PlayerSessionData> playerSessionDataNetworkList;
 
-    private void OnEnable()
-    {
-        playerSessionDataNetworkList.OnListChanged += OnplayerSessionDataNetworkListChanged;
-    }
-
-    private void OnDisable()
-    {
-        playerSessionDataNetworkList.OnListChanged -= OnplayerSessionDataNetworkListChanged;
-    }
-
-    public void RegisterPlayerSessionData(ulong clientId, string playerId, string username, int winsCount)
-    {
-        if (!IsServer) return;
-
-        playerSessionDataNetworkList.Add(new PlayerSessionData(clientId, playerId, username, winsCount));
-    }
-
-    public void DeregisterPlayerSessionData(ulong clientId)
-    {
-        if (!IsServer) return;
-
-        for (int i = 0; i < playerSessionDataNetworkList.Count; i++)
+        private void Awake()
         {
-            if (playerSessionDataNetworkList[i].clientId == clientId)
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+
+            playerSessionDataNetworkList = new NetworkList<PlayerSessionData>();
+        }
+
+        private void OnEnable()
+        {
+            playerSessionDataNetworkList.OnListChanged += OnplayerSessionDataNetworkListChanged;
+        }
+
+        private void OnDisable()
+        {
+            playerSessionDataNetworkList.OnListChanged -= OnplayerSessionDataNetworkListChanged;
+        }
+
+        public void RegisterPlayerSessionData(ulong clientId, string playerId, string username, int winsCount)
+        {
+            if (!IsServer) return;
+
+            playerSessionDataNetworkList.Add(new PlayerSessionData(clientId, playerId, username, winsCount, false));
+        }
+
+        public void DeregisterPlayerSessionData(ulong clientId)
+        {
+            if (!IsServer) return;
+
+            for (int i = 0; i < playerSessionDataNetworkList.Count; i++)
             {
-                playerSessionDataNetworkList.RemoveAt(i);
-                break;
+                if (playerSessionDataNetworkList[i].clientId == clientId)
+                {
+                    playerSessionDataNetworkList.RemoveAt(i);
+                    break;
+                }
             }
         }
-    }
 
-    public PlayerSessionData GetPlayerSessionData(ulong clientId)
-    {
-        foreach (var sessionData in playerSessionDataNetworkList)
+        public PlayerSessionData GetPlayerSessionData(ulong clientId)
         {
-            if (sessionData.clientId == clientId)
+            foreach (var sessionData in playerSessionDataNetworkList)
             {
-                return sessionData;
+                if (sessionData.clientId == clientId)
+                {
+                    return sessionData;
+                }
             }
+            return default;
         }
-        return default;
-    }
 
-    private void OnplayerSessionDataNetworkListChanged(NetworkListEvent<PlayerSessionData> changeEvent)
-    {
-        switch (changeEvent.Type)
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+        public void SetPlayerStatusServerRpc(ulong clientId, bool isReady)
         {
-            case NetworkListEvent<PlayerSessionData>.EventType.Add:
-                HandlePlayerJoined(changeEvent.Value);
-                break;
+            PlayerSessionData sessionDataToUpdate;
 
-            default:
-                break;
+            foreach (var sessionData in playerSessionDataNetworkList)
+            {
+                if (sessionData.clientId == clientId)
+                {
+                    sessionDataToUpdate = sessionData;
+                    break;
+                }
+            }
+            sessionDataToUpdate.isReady = isReady;
         }
 
-        EventBusManager.Instance.Raise(EventNameEnum.PlayerJoined);
-    }
 
-    private void HandlePlayerJoined(PlayerSessionData playerData)
-    {
-        EventBusManager.Instance.Raise(EventNameEnum.PlayerJoined, playerData.clientId);
+        private void OnplayerSessionDataNetworkListChanged(NetworkListEvent<PlayerSessionData> changeEvent)
+        {
+            switch (changeEvent.Type)
+            {
+                case NetworkListEvent<PlayerSessionData>.EventType.Add:
+                    HandlePlayerJoined(changeEvent.Value);
+                    break;
+
+                default:
+                    break;
+            }
+
+            EventBusManager.Instance.Raise(EventNameEnum.PlayerJoined);
+        }
+
+        private void HandlePlayerJoined(PlayerSessionData playerData)
+        {
+            EventBusManager.Instance.Raise(EventNameEnum.PlayerJoined, playerData.clientId);
+        }
+
     }
 
 }
-
