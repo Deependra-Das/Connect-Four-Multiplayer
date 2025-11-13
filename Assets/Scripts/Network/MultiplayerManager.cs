@@ -1,7 +1,7 @@
-using ConnectFourMultiplayer.Event;
 using ConnectFourMultiplayer.Main;
 using System;
 using Unity.Netcode;
+using Unity.Services.Authentication;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -26,25 +26,26 @@ public class MultiplayerManager : NetworkBehaviour
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.Singleton.OnClientDisconnectCallback += OnClientHostDisconnected;
         NetworkManager.Singleton.StartHost();
+        PlayerSessionDataManager.Instance.RegisterPlayerSessionData(NetworkManager.Singleton.LocalClientId, AuthenticationService.Instance.PlayerId, PlayerUsername, 0);
     }
 
     private void NetworkManager_ConnectionApprovalCallback(NetworkManager.ConnectionApprovalRequest connectionApprovalRequest, NetworkManager.ConnectionApprovalResponse connectionApprovalResponse)
     {
-        //string activeSceneName = SceneManager.GetActiveScene().name.ToString();
-        //Enum.TryParse<SceneNameEnum>(activeSceneName, out var sceneEnumValue);
+        string activeSceneName = SceneManager.GetActiveScene().name.ToString();
+        Enum.TryParse<SceneNameEnum>(activeSceneName, out var sceneEnumValue);
 
-        //if (NetworkManager.Singleton.IsServer && sceneEnumValue != SceneNameEnum.LobbyScene)
-        //{
-        //    connectionApprovalResponse.Approved = false;
-        //    connectionApprovalResponse.Reason = "Game has already Started.";
-        //    return;
-        //}
-        //if (NetworkManager.Singleton.ConnectedClients.Count >= MAX_LOBBY_SIZE)
-        //{
-        //    connectionApprovalResponse.Approved = false;
-        //    connectionApprovalResponse.Reason = "Lobby Capacity Full. No Available Slots.";
-        //    return;
-        //}
+        if (NetworkManager.Singleton.IsServer && sceneEnumValue != SceneNameEnum.LobbyScene)
+        {
+            connectionApprovalResponse.Approved = false;
+            connectionApprovalResponse.Reason = "Game has already Started.";
+            return;
+        }
+        if (NetworkManager.Singleton.ConnectedClients.Count >= MAX_LOBBY_SIZE)
+        {
+            connectionApprovalResponse.Approved = false;
+            connectionApprovalResponse.Reason = "Lobby Capacity Full. No Available Slots.";
+            return;
+        }
         connectionApprovalResponse.Approved = true;
     }
 
@@ -60,8 +61,9 @@ public class MultiplayerManager : NetworkBehaviour
     {
         if (NetworkManager.Singleton.IsClient && !NetworkManager.Singleton.IsHost)
         {
-            //RequestPlayerRegistrationServerRpc(clientId, AuthenticationService.Instance.PlayerId, PlayerUsername);
+            RequestPlayerRegistrationServerRpc(clientId, AuthenticationService.Instance.PlayerId, PlayerUsername);
         }
+
         string activeSceneName = SceneManager.GetActiveScene().name.ToString();
         Enum.TryParse<SceneNameEnum>(activeSceneName, out var sceneEnumValue);
 
@@ -81,10 +83,7 @@ public class MultiplayerManager : NetworkBehaviour
             //Play Player Left Audio
         }
 
-        if (NetworkManager.Singleton.IsServer && sceneEnumValue == SceneNameEnum.LobbyScene)
-        {
-            //RequestPlayerDeregistrationServerRpc(clientId);
-        }
+        RequestPlayerDeregistration(clientId);        
 
         if (!NetworkManager.Singleton.IsServer && sceneEnumValue == SceneNameEnum.GameplayScene)
         {
@@ -92,26 +91,15 @@ public class MultiplayerManager : NetworkBehaviour
         }
     }
 
-    //[ServerRpc(RequireOwnership = false)]
-    //public void RequestPlayerRegistrationServerRpc(ulong clientId, string playerId, string username)
-    //{
-    //    PlayerSessionManager.Instance.RegisterPlayer(clientId, playerId, username);
-    //    ConfirmPlayerRegistrationClientRpc(clientId);
-    //}
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void RequestPlayerRegistrationServerRpc(ulong clientId, string playerId, string username)
+    {
+        Debug.Log($"ClientId: {clientId}, Username: {username},");
+        PlayerSessionDataManager.Instance.RegisterPlayerSessionData(clientId, playerId, username, 0);
+    }
 
-    //[ClientRpc]
-    //private void ConfirmPlayerRegistrationClientRpc(ulong clientId)
-    //{
-    //    if (NetworkManager.Singleton.IsServer)
-    //    {
-    //        CharacterManager.Instance.HandleLateJoin(clientId);
-    //    }
-    //}
-
-    //[ServerRpc(RequireOwnership = false)]
-    //public void RequestPlayerDeregistrationServerRpc(ulong clientId)
-    //{
-    //    PlayerSessionManager.Instance.DeregisterPlayer(clientId);
-    //}
-
+    public void RequestPlayerDeregistration(ulong clientId)
+    {
+        PlayerSessionDataManager.Instance.DeregisterPlayerSessionData(clientId);
+    }
 }
