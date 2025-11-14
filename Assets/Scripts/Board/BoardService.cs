@@ -25,18 +25,23 @@ namespace ConnectFourMultiplayer.Board
             _board = new int[_boardRowCount, _boardColumnCount];
         }
 
-        public bool SetBoardCellValue(int col, int value)
+        public void SetBoardCellValue(int row, int col, int value)
         {
+            _board[row, col] = value;
+        }
+
+        public int GetRowForAvailableCell(int col)
+        {
+            int availableRow = -1;
+
             for (int row = _boardRowCount - 1; row >= 0; row--)
             {
                 if (_board[row, col] == 0)
                 {
-                    _board[row, col] = value;
-                    _lastAddedCellRow = row;
-                    return true;
+                    availableRow = row;
                 }
             }
-            return false;
+            return availableRow;
         }
 
         public void PrintBoardLog()
