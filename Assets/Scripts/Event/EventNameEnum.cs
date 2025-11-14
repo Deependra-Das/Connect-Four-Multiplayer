@@ -13,6 +13,7 @@ namespace ConnectFourMultiplayer.Event
         PlayerLeft,
         PlayerLobbyStateChanged,
         TakeTurn,
+        EnableColumnInput,
         ChangePlayerTurn,
         GameOver,
         PlayerGiveUp,
