@@ -1,5 +1,5 @@
 using ConnectFourMultiplayer.Event;
-using ConnectFourMultiplayer.Gameplay;
+using ConnectFourMultiplayer.Network;
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
