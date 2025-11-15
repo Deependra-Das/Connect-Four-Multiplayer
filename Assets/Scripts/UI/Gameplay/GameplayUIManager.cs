@@ -1,4 +1,5 @@
 using ConnectFourMultiplayer.Event;
+using ConnectFourMultiplayer.Network;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -14,7 +15,10 @@ namespace ConnectFourMultiplayer.UI
         [SerializeField] private TMP_Text _playerNotificationText;
         [SerializeField] private Button _giveUpButton;
         [SerializeField] private float _slideDuration;
+        [SerializeField] private float waitDuration; 
         [SerializeField] private float _offsetY;
+        [SerializeField] private GameObject _messagePanelGameplayUI;
+        [SerializeField] private TMP_Text _messageTextGameplayUI;
 
         private Vector3 _topPos;
         private Vector3 _bottomPos;
@@ -30,6 +34,7 @@ namespace ConnectFourMultiplayer.UI
             EventBusManager.Instance.Subscribe(EventNameEnum.TakeTurn, HandleTakeTurnGameplayUI);
             EventBusManager.Instance.Subscribe(EventNameEnum.ChangePlayerTurn, HandleChangePlayerTurnGameplayUI);
             EventBusManager.Instance.Subscribe(EventNameEnum.GameOver, HandleGameOverGameplayUI);
+            EventBusManager.Instance.Subscribe(EventNameEnum.PlayerGiveUp, HandlePlayerGiveUpGameplayUI);
         }
 
         private void UnsubscribeToEvents()
@@ -38,18 +43,20 @@ namespace ConnectFourMultiplayer.UI
             EventBusManager.Instance.Unsubscribe(EventNameEnum.TakeTurn, HandleTakeTurnGameplayUI);
             EventBusManager.Instance.Unsubscribe(EventNameEnum.ChangePlayerTurn, HandleChangePlayerTurnGameplayUI);
             EventBusManager.Instance.Unsubscribe(EventNameEnum.GameOver, HandleGameOverGameplayUI);
+            EventBusManager.Instance.Unsubscribe(EventNameEnum.PlayerGiveUp, HandlePlayerGiveUpGameplayUI);
         }
 
         void Start()
         {
             _topPos = _gameplayNotificationPanel.transform.position;
             _bottomPos = new Vector3(_topPos.x, _topPos.y - _offsetY, _topPos.z);
+            HideMessageUI();
         }
 
         private void OnGiveUpButtonClicked()
         {
-            EventBusManager.Instance.Raise(EventNameEnum.PlayerGiveUp);
             _giveUpButton.interactable = false;
+            GameplayManager.Instance.HandlePlayerGiveUpGameplay();
         }
 
         public void SlideDownPlayerTurnPanel()
@@ -84,7 +91,6 @@ namespace ConnectFourMultiplayer.UI
         private void HandleChangePlayerTurnGameplayUI(object[] parameters)
         {
             int playerTurn = (int)parameters[0];
-            float waitDuration = (float)parameters[1];
 
             StartCoroutine(WaitBeforeSlideDown(playerTurn, waitDuration));
         }
@@ -103,17 +109,32 @@ namespace ConnectFourMultiplayer.UI
 
         private void HandleGameOverGameplayUI(object[] parameters)
         {
-            int playerTurn = (int)parameters[0];
-
-            StartCoroutine(WinnerNotificationSlideDown(playerTurn, 1f));
+            _giveUpButton.interactable = false;
         }
 
-        IEnumerator WinnerNotificationSlideDown(int playerTurn, float waitDuration)
+        private void HandlePlayerGiveUpGameplayUI(object[] parameters)
         {
-            SlideUpPlayerTurnPanel();
+            int playerGaveUp = (int)parameters[0];
+            _giveUpButton.interactable = false;
+            _messageTextGameplayUI.text = "Player " + playerGaveUp + " Gave Up";
+            StartCoroutine(ShowHideMesageUI(3f));
+        }
+
+        private void ShowMessageUI()
+        {
+            _messagePanelGameplayUI.SetActive(true);
+        }
+
+        private void HideMessageUI()
+        {
+            _messagePanelGameplayUI.SetActive(false);
+        }
+
+        IEnumerator ShowHideMesageUI(float waitDuration)
+        {
+            ShowMessageUI();
             yield return new WaitForSeconds(waitDuration);
-            _playerNotificationText.text = "Player " + playerTurn + " Won";
-            SlideDownPlayerTurnPanel();
+            HideMessageUI();
         }
     }
 }
