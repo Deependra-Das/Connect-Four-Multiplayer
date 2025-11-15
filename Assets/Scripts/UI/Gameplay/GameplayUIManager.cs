@@ -9,48 +9,51 @@ namespace ConnectFourMultiplayer.UI
 {
     public class GameplayUIManager : MonoBehaviour
     {
-        [SerializeField] private TMP_Text _p1UsernameText;
-        [SerializeField] private TMP_Text _p2UsernameText;
-        [SerializeField] private GameObject _gameplayNotificationPanel;
+        [SerializeField] private TMP_Text _player1UsernameText;
+        [SerializeField] private TMP_Text _player2UsernameText;
         [SerializeField] private TMP_Text _playerNotificationText;
         [SerializeField] private Button _giveUpButton;
-        [SerializeField] private float _slideDuration;
-        [SerializeField] private float waitDuration; 
-        [SerializeField] private float _offsetY;
-        [SerializeField] private GameObject _messagePanelGameplayUI;
-        [SerializeField] private TMP_Text _messageTextGameplayUI;
+        [SerializeField] private GameObject _messagePanel;
+        [SerializeField] private TMP_Text _messageText;
 
-        private Vector3 _topPos;
-        private Vector3 _bottomPos;
-        private Coroutine _currentAnimation;
+        public HorizontalLayoutGroup _layoutGroup;
+        public RectTransform _uiElementToSlide;
+        public Image _uiElementImage;
+        public float _slideDuration = 1f;
+
+        public Color _leftColor = Color.red;
+        public Color _rightColor = Color.blue;
+        public Color _centerColor = Color.black;
+
+        private RectTransform _layoutRectTransform;
+
+        private void Awake()
+        {
+            _layoutRectTransform = _layoutGroup.GetComponent<RectTransform>();
+        }
 
         private void OnEnable() => SubscribeToEvents();
-
-        private void OnDisable() => UnsubscribeToEvents();
+        private void OnDisable() => UnsubscribeFromEvents();
 
         private void SubscribeToEvents()
         {
             _giveUpButton.onClick.AddListener(OnGiveUpButtonClicked);
-            EventBusManager.Instance.Subscribe(EventNameEnum.TakeTurn, HandleTakeTurnGameplayUI);
-            EventBusManager.Instance.Subscribe(EventNameEnum.ChangePlayerTurn, HandleChangePlayerTurnGameplayUI);
-            EventBusManager.Instance.Subscribe(EventNameEnum.GameOver, HandleGameOverGameplayUI);
-            EventBusManager.Instance.Subscribe(EventNameEnum.PlayerGiveUp, HandlePlayerGiveUpGameplayUI);
+            EventBusManager.Instance.Subscribe(EventNameEnum.ChangePlayerTurn, HandleChangePlayerTurn);
+            EventBusManager.Instance.Subscribe(EventNameEnum.GameOver, HandleGameOver);
+            EventBusManager.Instance.Subscribe(EventNameEnum.PlayerGiveUp, HandlePlayerGiveUp);
         }
 
-        private void UnsubscribeToEvents()
+        private void UnsubscribeFromEvents()
         {
             _giveUpButton.onClick.RemoveListener(OnGiveUpButtonClicked);
-            EventBusManager.Instance.Unsubscribe(EventNameEnum.TakeTurn, HandleTakeTurnGameplayUI);
-            EventBusManager.Instance.Unsubscribe(EventNameEnum.ChangePlayerTurn, HandleChangePlayerTurnGameplayUI);
-            EventBusManager.Instance.Unsubscribe(EventNameEnum.GameOver, HandleGameOverGameplayUI);
-            EventBusManager.Instance.Unsubscribe(EventNameEnum.PlayerGiveUp, HandlePlayerGiveUpGameplayUI);
+            EventBusManager.Instance.Unsubscribe(EventNameEnum.ChangePlayerTurn, HandleChangePlayerTurn);
+            EventBusManager.Instance.Unsubscribe(EventNameEnum.GameOver, HandleGameOver);
+            EventBusManager.Instance.Unsubscribe(EventNameEnum.PlayerGiveUp, HandlePlayerGiveUp);
         }
 
         void Start()
         {
-            _topPos = _gameplayNotificationPanel.transform.position;
-            _bottomPos = new Vector3(_topPos.x, _topPos.y - _offsetY, _topPos.z);
-            HideMessageUI();
+            HideMessagePanel();
         }
 
         private void OnGiveUpButtonClicked()
@@ -59,82 +62,107 @@ namespace ConnectFourMultiplayer.UI
             GameplayManager.Instance.HandlePlayerGiveUpGameplay();
         }
 
-        public void SlideDownPlayerTurnPanel()
+        private void HandleChangePlayerTurn(object[] parameters)
         {
-            if (_currentAnimation != null) StopCoroutine(_currentAnimation);
-            _currentAnimation = StartCoroutine(AnimatePlayerTurnPanelPosition(_topPos, _bottomPos));
-        }
+            int _currentPlayerTurn = (int)parameters[0];
 
-        public void SlideUpPlayerTurnPanel()
-        {
-            if (_currentAnimation != null) StopCoroutine(_currentAnimation);
-            _currentAnimation = StartCoroutine(AnimatePlayerTurnPanelPosition(_bottomPos, _topPos));
-        }
-
-        IEnumerator AnimatePlayerTurnPanelPosition(Vector3 currentPos, Vector3 newPos)
-        {
-            float elapsedTime = 0f;
-            while (elapsedTime < _slideDuration)
+            switch (_currentPlayerTurn)
             {
-                _gameplayNotificationPanel.transform.position = Vector3.Lerp(currentPos, newPos, elapsedTime / _slideDuration);
-                elapsedTime += Time.deltaTime;
+                case 1:
+                    _playerNotificationText.text = "Player " + _currentPlayerTurn + " Turn";
+                    SlideLeft();
+                    break;
+
+                case 2:
+                    _playerNotificationText.text = "Player " + _currentPlayerTurn + " Turn";
+                    SlideRight();
+                    break;
+
+                default:
+                    _playerNotificationText.text = "Game Over";
+                    SlideToCenter();
+                    break;
+            }
+        }
+
+        private void HandleGameOver(object[] parameters)
+        {
+            _giveUpButton.interactable = false;
+        }
+
+        private void HandlePlayerGiveUp(object[] parameters)
+        {
+            int _playerWhoGaveUp = (int)parameters[0];
+            _giveUpButton.interactable = false;
+            _messageText.text = "Player " + _playerWhoGaveUp + " Gave Up";
+            StartCoroutine(ShowHideMessagePanel(3f));
+        }
+
+        private void ShowMessagePanel()
+        {
+            _messagePanel.SetActive(true);
+        }
+
+        private void HideMessagePanel()
+        {
+            _messagePanel.SetActive(false);
+        }
+
+        IEnumerator ShowHideMessagePanel(float duration)
+        {
+            ShowMessagePanel();
+            yield return new WaitForSeconds(duration);
+            HideMessagePanel();
+        }
+
+        public void SlideLeft() => StartSlide(TextAnchor.MiddleLeft, _leftColor);
+        public void SlideToCenter() => StartSlide(TextAnchor.MiddleCenter, _centerColor);  // Use center color here
+        public void SlideRight() => StartSlide(TextAnchor.MiddleRight, _rightColor);
+
+        private void StartSlide(TextAnchor alignment, Color targetColor)
+        {
+            Vector2 _startPosition = _uiElementToSlide.anchoredPosition;
+
+            _layoutGroup.childAlignment = alignment;
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_layoutRectTransform);
+
+            Vector2 _endPosition = _uiElementToSlide.anchoredPosition;
+
+            LayoutElement _layoutElement = _uiElementToSlide.GetComponent<LayoutElement>();
+            if (_layoutElement == null) _layoutElement = _uiElementToSlide.gameObject.AddComponent<LayoutElement>();
+            _layoutElement.ignoreLayout = true;
+
+            _uiElementToSlide.anchoredPosition = _startPosition;
+
+            StopAllCoroutines();
+            StartCoroutine(SlideToPosition(_startPosition, _endPosition, _layoutElement, targetColor));
+        }
+
+        private IEnumerator SlideToPosition(Vector2 start, Vector2 end, LayoutElement layoutElement, Color targetColor)
+        {
+            float _elapsedTime = 0f;
+
+            while (_elapsedTime < _slideDuration)
+            {
+                _elapsedTime += Time.deltaTime;
+                float _normalizedTime = Mathf.Clamp01(_elapsedTime / _slideDuration);
+                _uiElementToSlide.anchoredPosition = Vector2.Lerp(start, end, _normalizedTime);
+
+                if (_uiElementImage != null)
+                {
+                    _uiElementImage.color = Color.Lerp(_uiElementImage.color, targetColor, _normalizedTime);
+                }
+
                 yield return null;
             }
-            _gameplayNotificationPanel.transform.position = newPos;
-        }
 
-        private void HandleTakeTurnGameplayUI(object[] parameters)
-        {
-            SlideUpPlayerTurnPanel();
-        }
+            _uiElementToSlide.anchoredPosition = end;
+            layoutElement.ignoreLayout = false;
 
-        private void HandleChangePlayerTurnGameplayUI(object[] parameters)
-        {
-            int playerTurn = (int)parameters[0];
-
-            StartCoroutine(WaitBeforeSlideDown(playerTurn, waitDuration));
-        }
-
-        IEnumerator WaitBeforeSlideDown(int playerTurn, float waitDuration)
-        {
-            yield return new WaitForSeconds(waitDuration);
-            SetPlayerTurnText(playerTurn);
-            SlideDownPlayerTurnPanel();
-        }
-
-        private void SetPlayerTurnText(int playerTurn)
-        {
-            _playerNotificationText.text = "Player " + playerTurn + " Turn";
-        }
-
-        private void HandleGameOverGameplayUI(object[] parameters)
-        {
-            _giveUpButton.interactable = false;
-        }
-
-        private void HandlePlayerGiveUpGameplayUI(object[] parameters)
-        {
-            int playerGaveUp = (int)parameters[0];
-            _giveUpButton.interactable = false;
-            _messageTextGameplayUI.text = "Player " + playerGaveUp + " Gave Up";
-            StartCoroutine(ShowHideMesageUI(3f));
-        }
-
-        private void ShowMessageUI()
-        {
-            _messagePanelGameplayUI.SetActive(true);
-        }
-
-        private void HideMessageUI()
-        {
-            _messagePanelGameplayUI.SetActive(false);
-        }
-
-        IEnumerator ShowHideMesageUI(float waitDuration)
-        {
-            ShowMessageUI();
-            yield return new WaitForSeconds(waitDuration);
-            HideMessageUI();
+            if (_uiElementImage != null)
+            {
+                _uiElementImage.color = targetColor;
+            }
         }
     }
 }
