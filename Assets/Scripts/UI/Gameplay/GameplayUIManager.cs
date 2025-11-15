@@ -2,6 +2,7 @@ using ConnectFourMultiplayer.Event;
 using ConnectFourMultiplayer.Network;
 using System.Collections;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -54,6 +55,19 @@ namespace ConnectFourMultiplayer.UI
         void Start()
         {
             HideMessagePanel();
+            SetPlayerUserName();
+        }
+
+        private void SetPlayerUserName()
+        {
+            if (NetworkManager.Singleton.ConnectedClients.Count == 2)
+            {
+                PlayerSessionData p1SessionData = PlayerSessionDataManager.Instance.GetPlayerSessionData(NetworkManager.Singleton.ConnectedClients[0].ClientId);
+                PlayerSessionData p2SessionData = PlayerSessionDataManager.Instance.GetPlayerSessionData(NetworkManager.Singleton.ConnectedClients[1].ClientId);
+
+                _player1UsernameText.text = p1SessionData.username.ToString();
+                _player2UsernameText.text = p2SessionData.username.ToString();
+            }
         }
 
         private void OnGiveUpButtonClicked()
