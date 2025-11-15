@@ -14,12 +14,14 @@ namespace ConnectFourMultiplayer.Gameplay
         {
             EventBusManager.Instance.Subscribe(EventNameEnum.EnableColumnInput, HandleEnableColumnInput);
             EventBusManager.Instance.Subscribe(EventNameEnum.GameOver, HandleGameOverColumnInput);
+            EventBusManager.Instance.Subscribe(EventNameEnum.DisableColumnInput, HandleDisableColumnInput);
         }
 
         private void OnDisable()
         {
-            EventBusManager.Instance.Unsubscribe(EventNameEnum.TakeTurn, HandleEnableColumnInput);
+            EventBusManager.Instance.Unsubscribe(EventNameEnum.EnableColumnInput, HandleEnableColumnInput);
             EventBusManager.Instance.Unsubscribe(EventNameEnum.GameOver, HandleGameOverColumnInput);
+            EventBusManager.Instance.Unsubscribe(EventNameEnum.DisableColumnInput, HandleDisableColumnInput);
         }
 
         private void OnMouseDown()
@@ -47,6 +49,11 @@ namespace ConnectFourMultiplayer.Gameplay
         }
 
         private void HandleGameOverColumnInput(object[] parameters)
+        {
+            SetCollidersState(false);
+        }
+
+        private void HandleDisableColumnInput(object[] parameters)
         {
             SetCollidersState(false);
         }
