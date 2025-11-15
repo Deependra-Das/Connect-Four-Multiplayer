@@ -29,21 +29,12 @@ namespace ConnectFourMultiplayer.Network
 
         public NetworkList<NetworkVector3Int> _winningDisksNetworkList;
 
+        private NetworkVariable<PlayerTurnEnum> _gameWinner = new NetworkVariable<PlayerTurnEnum>(PlayerTurnEnum.None,
+                NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+
         public static GameplayManager Instance { get; private set; }
 
-        private void OnEnable() => SubscribeToEvents();
-
-        private void OnDisable() => UnsubscribeToEvents();
-
-        private void SubscribeToEvents()
-        {
-            _currentTurn.OnValueChanged += OnTurnChanged;
-        }
-
-        private void UnsubscribeToEvents()
-        {
-            _currentTurn.OnValueChanged -= OnTurnChanged;
-        }
 
         private void Awake()
         {
@@ -61,10 +52,18 @@ namespace ConnectFourMultiplayer.Network
 
         public override void OnNetworkSpawn()
         {
+            base.OnNetworkSpawn();
+            _currentTurn.OnValueChanged += OnTurnChanged;
+
             if (IsServer)
             {
                 StartCoroutine(WaitForPlayersReady());
             }
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            _currentTurn.OnValueChanged -= OnTurnChanged;
         }
 
         private IEnumerator WaitForPlayersReady()
@@ -80,9 +79,10 @@ namespace ConnectFourMultiplayer.Network
             _gameplayState.Value = GameplayStateEnum.Playing;
 
             if (IsServer)
+            { 
                 _currentTurn.Value = PlayerTurnEnum.Player1;
+            }     
         }
-
 
         [ClientRpc]
         private void InitializeClientRpc()
@@ -103,16 +103,6 @@ namespace ConnectFourMultiplayer.Network
                 _readyPlayersNetworkList.Add(clientId);
         }
 
-        private void OnTurnChanged(PlayerTurnEnum oldTurn, PlayerTurnEnum newTurn)
-        {
-            EventBusManager.Instance.Raise(EventNameEnum.ChangePlayerTurn, _currentTurn.Value, 2f);
-
-            if (IsMyTurn())
-            {
-                EventBusManager.Instance.RaiseNoParams(EventNameEnum.EnableColumnInput);
-            }
-        }
-
         public void InitializeSpawnedDiskMatrix(int rowCount, int colCount)
         {
             _spawnedDisks = new GameObject[rowCount, colCount];
@@ -122,12 +112,17 @@ namespace ConnectFourMultiplayer.Network
         {
             if (_gameplayState.Value == GameplayStateEnum.Playing && IsMyTurn())
             {
+                EventBusManager.Instance.RaiseNoParams(EventNameEnum.DisableColumnInput);
                 int rowIndex = GetRowForAvailableCell(colIndex);
 
                 if (rowIndex != -1)
-                {
+                {                 
                     TakeTurnServerRpc(new NetworkVector3Int(rowIndex, colIndex, (int)_currentTurn.Value));
                     return true;
+                }
+                else
+                {
+                    EventBusManager.Instance.RaiseNoParams(EventNameEnum.EnableColumnInput);
                 }
             }
             return false;
@@ -135,7 +130,7 @@ namespace ConnectFourMultiplayer.Network
 
         public void OnHoverOverColumn(int colIndex)
         {
-            if (IsMyTurn())
+            if (_gameplayState.Value == GameplayStateEnum.Playing && IsMyTurn())
             {
                 OnHoverOverColumnServerRpc(colIndex);
             }       
@@ -180,7 +175,7 @@ namespace ConnectFourMultiplayer.Network
             SpawnDiskClientRpc(turnData);
 
             CheckForWin(turnData.x, turnData.y);
-            ToggleTurn();
+            ChangePlayerTurnServerRpc();
         }
 
         [ClientRpc]
@@ -188,6 +183,7 @@ namespace ConnectFourMultiplayer.Network
         {
             GameManager.Instance.Get<BoardService>().SetBoardCellValue(turnData.x, turnData.y, turnData.z);
             EventBusManager.Instance.Raise(EventNameEnum.TakeTurn, _currentTurn.Value);
+            GameManager.Instance.Get<DiskPreviewService>().DisableDiskPreview();
         }
 
         [ClientRpc]
@@ -221,9 +217,7 @@ namespace ConnectFourMultiplayer.Network
             if (win)
             {
                 winningDiscs.Add(new Vector2Int(rowIndex, colIndex));
-
                 UpdateWinningDiskList(winningDiscs);
-                _gameplayState.Value = GameplayStateEnum.GameOver;
                 NotifyWinningDisksClientRpc();
                 NotifyGameOverServerRpc();
             }
@@ -296,18 +290,36 @@ namespace ConnectFourMultiplayer.Network
             return _spawnedDisks[row, col].gameObject.transform.position;
         }
 
-
-        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Server)]
         private void NotifyGameOverServerRpc(RpcParams rpcParams = default)
         {
-            EventBusManager.Instance.Raise(EventNameEnum.GameOver, _currentTurn.Value);
-            LoadGameOverScene();
+            if (IsServer)
+            {
+                _gameplayState.Value = GameplayStateEnum.GameOver;
+                _gameWinner.Value = _currentTurn.Value;
+                _currentTurn.Value = PlayerTurnEnum.None;
+
+                NotifyGameOverClientRpc();
+                StartCoroutine(LoadGameOverScene());
+            }
+        }
+
+
+        [ClientRpc]
+        private void NotifyGameOverClientRpc()
+        {
+            EventBusManager.Instance.Raise(EventNameEnum.GameOver, _gameWinner.Value);
+            GameManager.Instance.Get<DiskPreviewService>().DisableDiskPreview();
         }
 
         private IEnumerator LoadGameOverScene()
         {
-            yield return new WaitForSeconds(5f);
-            SceneLoader.Instance.LoadScene(SceneNameEnum.GameOverScene, true);
+            yield return new WaitForSeconds(3f);
+
+            if (IsServer)
+            {
+                SceneLoader.Instance.LoadScene(SceneNameEnum.GameOverScene, true);
+            }
         }
 
         private bool IsPlayersTurn(ulong clientId)
@@ -323,9 +335,23 @@ namespace ConnectFourMultiplayer.Network
             return false;
         }
 
-        private void ToggleTurn()
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Server)]
+        private void ChangePlayerTurnServerRpc(RpcParams rpcParams = default)
         {
-            _currentTurn.Value = (_currentTurn.Value == PlayerTurnEnum.Player1) ? PlayerTurnEnum.Player2 : PlayerTurnEnum.Player1;
+            if (IsServer && _gameplayState.Value == GameplayStateEnum.Playing)
+            {
+                _currentTurn.Value = (_currentTurn.Value == PlayerTurnEnum.Player1) ? PlayerTurnEnum.Player2 : PlayerTurnEnum.Player1;
+            }
+        }
+
+        private void OnTurnChanged(PlayerTurnEnum oldTurn, PlayerTurnEnum newTurn)
+        {
+            EventBusManager.Instance.Raise(EventNameEnum.ChangePlayerTurn, new object[] { _currentTurn.Value });
+            GameManager.Instance.Get<DiskPreviewService>().HandlePlayerTurnChangeDiskPreview(_currentTurn.Value);
+            if (IsMyTurn())
+            {
+                EventBusManager.Instance.RaiseNoParams(EventNameEnum.EnableColumnInput);
+            }
         }
 
         public bool IsMyTurn()
@@ -340,6 +366,41 @@ namespace ConnectFourMultiplayer.Network
                 return me != host;
 
             return false;
+        }
+
+        public void HandlePlayerGiveUpGameplay()
+        {
+            NotifyPlayerGiveUpServerRpc();       
+        }
+
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+        private void NotifyPlayerGiveUpServerRpc(RpcParams rpcParams = default)
+        {
+            ulong sender = rpcParams.Receive.SenderClientId;
+            ulong me = NetworkManager.Singleton.LocalClientId;
+            ulong host = NetworkManager.ServerClientId;
+
+            _gameplayState.Value = GameplayStateEnum.GameOver;
+
+            if (sender == me)
+            {
+                _gameWinner.Value = PlayerTurnEnum.Player1;
+            }
+            else if(sender == host)
+            {
+                _gameWinner.Value = PlayerTurnEnum.Player2;
+            }
+
+            PlayerTurnEnum gameLoser = (_gameWinner.Value == PlayerTurnEnum.Player1) ? PlayerTurnEnum.Player2 : PlayerTurnEnum.Player1;
+            NotifyPlayerGiveUpClientRpc(gameLoser);
+            NotifyGameOverClientRpc();
+            LoadGameOverScene();
+        }
+
+        [ClientRpc]
+        private void NotifyPlayerGiveUpClientRpc(PlayerTurnEnum gameLoser)
+        {
+            EventBusManager.Instance.Raise(EventNameEnum.PlayerGiveUp, gameLoser);
         }
     }
 }
