@@ -299,11 +299,11 @@ namespace ConnectFourMultiplayer.Network
                 _gameWinner.Value = _currentTurn.Value;
                 _currentTurn.Value = PlayerTurnEnum.None;
 
+                MultiplayerManager.Instance.SetGameWinner(_gameWinner.Value);
                 NotifyGameOverClientRpc();
                 StartCoroutine(LoadGameOverScene());
             }
         }
-
 
         [ClientRpc]
         private void NotifyGameOverClientRpc()
@@ -376,25 +376,36 @@ namespace ConnectFourMultiplayer.Network
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         private void NotifyPlayerGiveUpServerRpc(RpcParams rpcParams = default)
         {
+            PlayerTurnEnum gameWinner = PlayerTurnEnum.None;
             ulong sender = rpcParams.Receive.SenderClientId;
-            ulong me = NetworkManager.Singleton.LocalClientId;
             ulong host = NetworkManager.ServerClientId;
 
-            _gameplayState.Value = GameplayStateEnum.GameOver;
-
-            if (sender == me)
+            if (sender == host)
             {
-                _gameWinner.Value = PlayerTurnEnum.Player1;
+                gameWinner = PlayerTurnEnum.Player2;
             }
-            else if(sender == host)
+            else
             {
-                _gameWinner.Value = PlayerTurnEnum.Player2;
+                gameWinner = PlayerTurnEnum.Player1;
             }
 
-            PlayerTurnEnum gameLoser = (_gameWinner.Value == PlayerTurnEnum.Player1) ? PlayerTurnEnum.Player2 : PlayerTurnEnum.Player1;
-            NotifyPlayerGiveUpClientRpc(gameLoser);
-            NotifyGameOverClientRpc();
-            LoadGameOverScene();
+            NotifyPlayerGiveUpGameOver(gameWinner);
+        }
+
+        private void NotifyPlayerGiveUpGameOver(PlayerTurnEnum winnerPlayer)
+        {
+            if (IsServer)
+            {
+                _gameWinner.Value = winnerPlayer;
+                _gameplayState.Value = GameplayStateEnum.GameOver;
+                _currentTurn.Value = PlayerTurnEnum.None;
+
+                MultiplayerManager.Instance.SetGameWinner(_gameWinner.Value);
+                PlayerTurnEnum gameLoser = (_gameWinner.Value == PlayerTurnEnum.Player1) ? PlayerTurnEnum.Player2 : PlayerTurnEnum.Player1;
+                NotifyPlayerGiveUpClientRpc(gameLoser);
+                NotifyGameOverClientRpc();
+                StartCoroutine(LoadGameOverScene());
+            }
         }
 
         [ClientRpc]

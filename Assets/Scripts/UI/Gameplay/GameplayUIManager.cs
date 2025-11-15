@@ -91,17 +91,15 @@ namespace ConnectFourMultiplayer.UI
                     _playerNotificationText.text = "Player " + _currentPlayerTurn + " Turn";
                     SlideRight();
                     break;
-
-                default:
-                    _playerNotificationText.text = "Game Over";
-                    SlideToCenter();
-                    break;
             }
         }
 
         private void HandleGameOver(object[] parameters)
         {
             _giveUpButton.interactable = false;
+            _playerNotificationText.text = "Game Over";
+            SlideToCenter();
+
         }
 
         private void HandlePlayerGiveUp(object[] parameters)

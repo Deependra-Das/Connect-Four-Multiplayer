@@ -1,4 +1,5 @@
 using ConnectFourMultiplayer.Event;
+using ConnectFourMultiplayer.Gameplay;
 using ConnectFourMultiplayer.Main;
 using System;
 using Unity.Netcode;
@@ -14,6 +15,9 @@ namespace ConnectFourMultiplayer.Network
         public string PlayerUsername { get; private set; }
 
         public const int MAX_LOBBY_SIZE = 2;
+
+        public NetworkVariable<PlayerTurnEnum> _gameWinner = new NetworkVariable<PlayerTurnEnum>(PlayerTurnEnum.None,
+           NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         private void Awake()
         {
@@ -100,6 +104,15 @@ namespace ConnectFourMultiplayer.Network
         public void RequestPlayerDeregistration(ulong clientId)
         {
             PlayerSessionDataManager.Instance.DeregisterPlayerSessionData(clientId);
+        }
+
+        public void SetGameWinner(PlayerTurnEnum winner)
+        {
+            if (IsServer)
+            {
+                _gameWinner.Value = winner;
+                Debug.Log(_gameWinner.Value);
+            }
         }
     }
 }
