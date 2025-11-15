@@ -15,20 +15,19 @@ namespace ConnectFourMultiplayer.Network
         [SerializeField] private Transform[] _spawnLocations;
         [SerializeField] private GameObject _highlightPrefab;
 
-        public NetworkList<NetworkVector3Int> ValueQueue;
-        private GameObject[,] spawnedDisks;
+        private NetworkList<NetworkVector3Int> _gameTurnQueue;
+        private GameObject[,] _spawnedDisks;
         private int _rowCount = 0;
         private int _colCount = 0;
 
-        private NetworkVariable<PlayerTurnEnum> currentTurn = new NetworkVariable<PlayerTurnEnum>(PlayerTurnEnum.None,
+        private NetworkVariable<PlayerTurnEnum> _currentTurn = new NetworkVariable<PlayerTurnEnum>(PlayerTurnEnum.None,
                 NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-        private NetworkList<ulong> readyClients;
+        private NetworkList<ulong> _readyPlayersNetworkList;
 
-        private NetworkVariable<GameplayStateEnum> gameplayState =
-            new NetworkVariable<GameplayStateEnum>(GameplayStateEnum.WaitingForPlayers);
+        private NetworkVariable<GameplayStateEnum> _gameplayState = new NetworkVariable<GameplayStateEnum>(GameplayStateEnum.WaitingForPlayers);
 
-        public NetworkList<NetworkVector3Int> winningDisksNetworkList;
+        public NetworkList<NetworkVector3Int> _winningDisksNetworkList;
 
         public static GameplayManager Instance { get; private set; }
 
@@ -38,12 +37,12 @@ namespace ConnectFourMultiplayer.Network
 
         private void SubscribeToEvents()
         {
-            currentTurn.OnValueChanged += OnTurnChanged;
+            _currentTurn.OnValueChanged += OnTurnChanged;
         }
 
         private void UnsubscribeToEvents()
         {
-            currentTurn.OnValueChanged -= OnTurnChanged;
+            _currentTurn.OnValueChanged -= OnTurnChanged;
         }
 
         private void Awake()
@@ -55,9 +54,9 @@ namespace ConnectFourMultiplayer.Network
             }
 
             Instance = this;
-            readyClients = new NetworkList<ulong>();
-            ValueQueue = new NetworkList<NetworkVector3Int>();
-            winningDisksNetworkList = new NetworkList<NetworkVector3Int>();
+            _readyPlayersNetworkList = new NetworkList<ulong>();
+            _gameTurnQueue = new NetworkList<NetworkVector3Int>();
+            _winningDisksNetworkList = new NetworkList<NetworkVector3Int>();
         }
 
         public override void OnNetworkSpawn()
@@ -70,18 +69,18 @@ namespace ConnectFourMultiplayer.Network
 
         private IEnumerator WaitForPlayersReady()
         {
-            gameplayState.Value = GameplayStateEnum.Initializing;
+            _gameplayState.Value = GameplayStateEnum.Initializing;
             InitializeClientRpc();
 
-            while (readyClients.Count < NetworkManager.Singleton.ConnectedClients.Count)
+            while (_readyPlayersNetworkList.Count < NetworkManager.Singleton.ConnectedClients.Count)
             {
                 yield return null;
             }
 
-            gameplayState.Value = GameplayStateEnum.Playing;
+            _gameplayState.Value = GameplayStateEnum.Playing;
 
             if (IsServer)
-                currentTurn.Value = PlayerTurnEnum.Player1;
+                _currentTurn.Value = PlayerTurnEnum.Player1;
         }
 
 
@@ -100,13 +99,13 @@ namespace ConnectFourMultiplayer.Network
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         private void NotifyReadyServerRpc(ulong clientId, RpcParams rpcParams = default)
         {
-            if (!readyClients.Contains(clientId))
-                readyClients.Add(clientId);
+            if (!_readyPlayersNetworkList.Contains(clientId))
+                _readyPlayersNetworkList.Add(clientId);
         }
 
         private void OnTurnChanged(PlayerTurnEnum oldTurn, PlayerTurnEnum newTurn)
         {
-            EventBusManager.Instance.Raise(EventNameEnum.ChangePlayerTurn, currentTurn.Value, 2f);
+            EventBusManager.Instance.Raise(EventNameEnum.ChangePlayerTurn, _currentTurn.Value, 2f);
 
             if (IsMyTurn())
             {
@@ -116,22 +115,49 @@ namespace ConnectFourMultiplayer.Network
 
         public void InitializeSpawnedDiskMatrix(int rowCount, int colCount)
         {
-            spawnedDisks = new GameObject[rowCount, colCount];
+            _spawnedDisks = new GameObject[rowCount, colCount];
         }
 
         public bool TryTakeTurn(int colIndex)
         {
-            if (gameplayState.Value == GameplayStateEnum.Playing && IsMyTurn())
+            if (_gameplayState.Value == GameplayStateEnum.Playing && IsMyTurn())
             {
                 int rowIndex = GetRowForAvailableCell(colIndex);
 
                 if (rowIndex != -1)
                 {
-                    TakeTurnServerRpc(new NetworkVector3Int(rowIndex, colIndex, (int)currentTurn.Value));
+                    TakeTurnServerRpc(new NetworkVector3Int(rowIndex, colIndex, (int)_currentTurn.Value));
                     return true;
                 }
             }
             return false;
+        }
+
+        public void OnHoverOverColumn(int colIndex)
+        {
+            if (IsMyTurn())
+            {
+                OnHoverOverColumnServerRpc(colIndex);
+            }       
+        }
+
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+        private void OnHoverOverColumnServerRpc(int colIndex, RpcParams rpcParams = default)
+        {
+            ulong sender = rpcParams.Receive.SenderClientId;
+
+            if (!IsPlayersTurn(sender))
+            {
+                return;
+            }
+
+            UpdateDiskPreviewClientRpc(colIndex);
+        }
+
+        [ClientRpc]
+        private void UpdateDiskPreviewClientRpc(int colIndex)
+        {
+            GameManager.Instance.Get<DiskPreviewService>().HandleHoverOverColumnDiskPreview(_currentTurn.Value, _spawnLocations[colIndex].position);
         }
 
         private int GetRowForAvailableCell(int col)
@@ -149,7 +175,7 @@ namespace ConnectFourMultiplayer.Network
                 return;
             }
 
-            ValueQueue.Add(turnData);
+            _gameTurnQueue.Add(turnData);
             UpdateBoardStateClientRpc(turnData);
             SpawnDiskClientRpc(turnData);
 
@@ -161,6 +187,7 @@ namespace ConnectFourMultiplayer.Network
         private void UpdateBoardStateClientRpc(NetworkVector3Int turnData)
         {
             GameManager.Instance.Get<BoardService>().SetBoardCellValue(turnData.x, turnData.y, turnData.z);
+            EventBusManager.Instance.Raise(EventNameEnum.TakeTurn, _currentTurn.Value);
         }
 
         [ClientRpc]
@@ -168,7 +195,7 @@ namespace ConnectFourMultiplayer.Network
         {
             GameObject newDiskSpawned = null;
 
-            switch (currentTurn.Value)
+            switch (_currentTurn.Value)
             {
                 case PlayerTurnEnum.Player1:
                     newDiskSpawned = GameManager.Instance.Get<DiskSpawnService>().SpawnDisk(DiskTypeEnum.DiskRed, _spawnLocations[turnData.y].position);
@@ -178,12 +205,12 @@ namespace ConnectFourMultiplayer.Network
                     break;
             }
 
-            spawnedDisks[turnData.x, turnData.y] = newDiskSpawned;
+            _spawnedDisks[turnData.x, turnData.y] = newDiskSpawned;
         }
 
         private void CheckForWin(int rowIndex, int colIndex)
         {
-            int playerValue = (int)currentTurn.Value;
+            int playerValue = (int)_currentTurn.Value;
             List<Vector2Int> winningDiscs = new List<Vector2Int>();
 
             bool win = CheckDirection(rowIndex, colIndex, 0, 1, playerValue, winningDiscs) ||
@@ -196,7 +223,7 @@ namespace ConnectFourMultiplayer.Network
                 winningDiscs.Add(new Vector2Int(rowIndex, colIndex));
 
                 UpdateWinningDiskList(winningDiscs);
-                gameplayState.Value = GameplayStateEnum.GameOver;
+                _gameplayState.Value = GameplayStateEnum.GameOver;
                 NotifyWinningDisksClientRpc();
                 NotifyGameOverServerRpc();
             }
@@ -204,11 +231,11 @@ namespace ConnectFourMultiplayer.Network
 
         private void UpdateWinningDiskList(List<Vector2Int> winningDiscs)
         {
-            winningDisksNetworkList.Clear();
+            _winningDisksNetworkList.Clear();
 
             foreach (var v in winningDiscs)
             {
-                winningDisksNetworkList.Add(new NetworkVector3Int(v.x, v.y, 0));
+                _winningDisksNetworkList.Add(new NetworkVector3Int(v.x, v.y, 0));
             }
         }
 
@@ -257,7 +284,7 @@ namespace ConnectFourMultiplayer.Network
         {
             yield return new WaitForSeconds(3f);
 
-            foreach (var discPos in winningDisksNetworkList)
+            foreach (var discPos in _winningDisksNetworkList)
             {
                 Vector3 worldPosition = GetDiskPosition(discPos.x, discPos.y);
                 GameObject highlightedDisk = Instantiate(_highlightPrefab, worldPosition, Quaternion.identity);
@@ -266,14 +293,14 @@ namespace ConnectFourMultiplayer.Network
 
         public Vector3 GetDiskPosition(int row, int col)
         {
-            return spawnedDisks[row, col].gameObject.transform.position;
+            return _spawnedDisks[row, col].gameObject.transform.position;
         }
 
 
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         private void NotifyGameOverServerRpc(RpcParams rpcParams = default)
         {
-            EventBusManager.Instance.Raise(EventNameEnum.GameOver, currentTurn.Value);
+            EventBusManager.Instance.Raise(EventNameEnum.GameOver, _currentTurn.Value);
             LoadGameOverScene();
         }
 
@@ -287,10 +314,10 @@ namespace ConnectFourMultiplayer.Network
         {
             ulong host = NetworkManager.ServerClientId;
 
-            if (currentTurn.Value == PlayerTurnEnum.Player1)
+            if (_currentTurn.Value == PlayerTurnEnum.Player1)
                 return clientId == host;
 
-            if (currentTurn.Value == PlayerTurnEnum.Player2)
+            if (_currentTurn.Value == PlayerTurnEnum.Player2)
                 return clientId != host;
 
             return false;
@@ -298,7 +325,7 @@ namespace ConnectFourMultiplayer.Network
 
         private void ToggleTurn()
         {
-            currentTurn.Value = (currentTurn.Value == PlayerTurnEnum.Player1) ? PlayerTurnEnum.Player2 : PlayerTurnEnum.Player1;
+            _currentTurn.Value = (_currentTurn.Value == PlayerTurnEnum.Player1) ? PlayerTurnEnum.Player2 : PlayerTurnEnum.Player1;
         }
 
         public bool IsMyTurn()
@@ -306,10 +333,10 @@ namespace ConnectFourMultiplayer.Network
             ulong me = NetworkManager.Singleton.LocalClientId;
             ulong host = NetworkManager.ServerClientId;
 
-            if (currentTurn.Value == PlayerTurnEnum.Player1)
+            if (_currentTurn.Value == PlayerTurnEnum.Player1)
                 return me == host;
 
-            if (currentTurn.Value == PlayerTurnEnum.Player2)
+            if (_currentTurn.Value == PlayerTurnEnum.Player2)
                 return me != host;
 
             return false;

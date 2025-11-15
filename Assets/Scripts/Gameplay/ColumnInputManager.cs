@@ -9,8 +9,6 @@ namespace ConnectFourMultiplayer.Gameplay
     {
         [SerializeField] private BoxCollider boxCollider;
         [SerializeField] private int _columnIndex;
-        [SerializeField] private float _cooldownTime = 3f;
-
 
         private void OnEnable()
         {
@@ -30,13 +28,13 @@ namespace ConnectFourMultiplayer.Gameplay
             SetCollidersState(!turnSuccess);
         }
 
-        //private void OnMouseOver()
-        //{
-        //    if (!_cooldownActive && !_isGameOVer)
-        //    {
-        //        GameplayManager.Instance.OnHoverOverColumn(_columnIndex);
-        //    }
-        //}
+        private void OnMouseOver()
+        {
+            if (boxCollider.enabled)
+            {
+                GameplayManager.Instance.OnHoverOverColumn(_columnIndex);
+            }
+        }
 
         private void HandleEnableColumnInput(object[] parameters)
         {
