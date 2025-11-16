@@ -19,14 +19,16 @@ namespace ConnectFourMultiplayer.Network
             _playerStateDictionary = new Dictionary<ulong, (string, bool)>();
         }
 
-        private void OnEnable()
+        public override void OnNetworkSpawn()
         {
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
         }
 
-        private void OnDisable()
+        public override void OnNetworkDespawn()
         {
+            base.OnNetworkSpawn();
             NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnect;
+            Dispose();
         }
 
         private void OnClientDisconnect(ulong clientId)
@@ -103,6 +105,11 @@ namespace ConnectFourMultiplayer.Network
         public void NotifyPlayerLobbyStateChangeClientRpc(ulong clientId, bool isReady)
         {
             EventBusManager.Instance.Raise(EventNameEnum.PlayerLobbyStateChanged, clientId, isReady);
+        }
+
+        private void Dispose()
+        {
+            _playerStateDictionary.Clear();
         }
     }
 }
