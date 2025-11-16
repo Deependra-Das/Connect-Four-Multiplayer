@@ -18,14 +18,20 @@ namespace ConnectFourMultiplayer.Network
             playerSessionDataNetworkList = new NetworkList<PlayerSessionData>();
         }
 
-        private void OnEnable()
+        public override void OnNetworkSpawn()
         {
             playerSessionDataNetworkList.OnListChanged += OnplayerSessionDataNetworkListChanged;
         }
 
-        private void OnDisable()
+        public override void OnNetworkDespawn()
         {
-            playerSessionDataNetworkList.OnListChanged -= OnplayerSessionDataNetworkListChanged;
+            base.OnNetworkDespawn();
+
+            if (playerSessionDataNetworkList != null)
+            {
+                playerSessionDataNetworkList.OnListChanged -= OnplayerSessionDataNetworkListChanged;
+            }
+            Dispose();
         }
 
         public void RegisterPlayerSessionData(ulong clientId, string playerId, string username, int winsCount)
@@ -39,23 +45,29 @@ namespace ConnectFourMultiplayer.Network
         {
             if (!IsServer) return;
 
-            for (int i = 0; i < playerSessionDataNetworkList.Count; i++)
+            if (playerSessionDataNetworkList != null)
             {
-                if (playerSessionDataNetworkList[i].clientId == clientId)
+                for (int i = 0; i < playerSessionDataNetworkList.Count; i++)
                 {
-                    playerSessionDataNetworkList.RemoveAt(i);
-                    break;
+                    if (playerSessionDataNetworkList[i].clientId == clientId)
+                    {
+                        playerSessionDataNetworkList.RemoveAt(i);
+                        break;
+                    }
                 }
             }
         }
 
         public PlayerSessionData GetPlayerSessionData(ulong clientId)
         {
-            foreach (var sessionData in playerSessionDataNetworkList)
+            if (playerSessionDataNetworkList != null)
             {
-                if (sessionData.clientId == clientId)
+                foreach (var sessionData in playerSessionDataNetworkList)
                 {
-                    return sessionData;
+                    if (sessionData.clientId == clientId)
+                    {
+                        return sessionData;
+                    }
                 }
             }
             return default;
@@ -66,15 +78,18 @@ namespace ConnectFourMultiplayer.Network
         {
             PlayerSessionData sessionDataToUpdate;
 
-            foreach (var sessionData in playerSessionDataNetworkList)
+            if (playerSessionDataNetworkList != null)
             {
-                if (sessionData.clientId == clientId)
+                foreach (var sessionData in playerSessionDataNetworkList)
                 {
-                    sessionDataToUpdate = sessionData;
-                    break;
+                    if (sessionData.clientId == clientId)
+                    {
+                        sessionDataToUpdate = sessionData;
+                        break;
+                    }
                 }
+                sessionDataToUpdate.isReady = isReady;
             }
-            sessionDataToUpdate.isReady = isReady;
         }
 
 
@@ -98,6 +113,18 @@ namespace ConnectFourMultiplayer.Network
             EventBusManager.Instance.Raise(EventNameEnum.PlayerJoined, playerData.clientId);
         }
 
+        public void Dispose()
+        {
+            if (IsServer)
+            {
+                if (playerSessionDataNetworkList != null)
+                {
+                    playerSessionDataNetworkList.Clear();
+                }
+
+                playerSessionDataNetworkList = null;
+            }
+        }
     }
 
 }
