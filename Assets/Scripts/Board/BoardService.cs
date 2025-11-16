@@ -5,9 +5,8 @@ namespace ConnectFourMultiplayer.Board
     public class BoardService
     {
         private int[,] _board;
-        private int _boardRowCount;
-        private int _boardColumnCount;
-        private int _lastAddedCellRow = -1;
+        private int _boardRowCount = 0;
+        private int _boardColumnCount = 0;
 
         public BoardService(BoardScriptableObject boardScriptableObject)
         {
@@ -65,10 +64,15 @@ namespace ConnectFourMultiplayer.Board
             return _board[row, col];
         }
 
-        public int LastAddedCellRow { get { return _lastAddedCellRow; } }
-
         public int RowCount { get { return _boardRowCount; } }
 
         public int ColumnCount { get { return _boardColumnCount; } }
+
+        public void Reset()
+        {
+            _board = null;
+            _boardRowCount = 0;
+            _boardColumnCount = 0;
+        }
     }
 }
