@@ -1,3 +1,4 @@
+using ConnectFourMultiplayer.Event;
 using ConnectFourMultiplayer.Gameplay;
 using ConnectFourMultiplayer.Main;
 using ConnectFourMultiplayer.Network;
@@ -14,10 +15,30 @@ namespace ConnectFourMultiplayer.UI
         [SerializeField] private TMP_Text _gameOverCountdownText;
         [SerializeField] private float _gameOverCountdownValue = 5f;
 
-        void Start()
+        private void OnEnable() => SubscribeToEvents();
+
+        private void OnDisable() => UnsubscribeToEvents();
+
+        private void SubscribeToEvents()
+        {
+            EventBusManager.Instance.Subscribe(EventNameEnum.SetWinnerOnGameOverUI, HandleWinnerDetailsOnGameOverUI);
+            EventBusManager.Instance.Subscribe(EventNameEnum.StartGameOverCountdown, HandleStartGameOverCountdownUI);
+        }
+
+        private void UnsubscribeToEvents()
+        {
+            EventBusManager.Instance.Unsubscribe(EventNameEnum.SetWinnerOnGameOverUI, HandleWinnerDetailsOnGameOverUI);
+            EventBusManager.Instance.Unsubscribe(EventNameEnum.StartGameOverCountdown, HandleStartGameOverCountdownUI);
+        }
+
+        private void HandleWinnerDetailsOnGameOverUI(object[] parameters)
         {
             SetWinnerDetails();
             EnableView();
+        }
+
+        private void HandleStartGameOverCountdownUI(object[] parameters)
+        {
             StartCoroutine(GameOverCountdownSequence());
         }
 
@@ -55,7 +76,14 @@ namespace ConnectFourMultiplayer.UI
                 yield return new WaitForSeconds(1f);
             }
 
+            CleanUp();
             SceneLoader.Instance.LoadScene(SceneNameEnum.MainMenuScene, false);
+        }
+
+        private void CleanUp()
+        {
+            GameManager.Instance.Get<CleanUpService>().CleanUpMultiplayerManager();
+            GameManager.Instance.Get<CleanUpService>().CleanUpNetworkManager();
         }
     }
 }
