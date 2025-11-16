@@ -11,12 +11,12 @@ namespace ConnectFourMultiplayer.Network
     {
         public static PlayerLobbyStateManager Instance { get; private set; }
 
-        private Dictionary<ulong, (string playerName, bool isReady)> _playerStateDictionary;
+        private Dictionary<ulong, bool> _playerStateDictionary;
 
         private void Awake()
         {
             Instance = this;
-            _playerStateDictionary = new Dictionary<ulong, (string, bool)>();
+            _playerStateDictionary = new Dictionary<ulong, bool>();
         }
 
         public override void OnNetworkSpawn()
@@ -52,19 +52,10 @@ namespace ConnectFourMultiplayer.Network
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         private void SetPlayerReadyServerRpc(RpcParams rpcParams = default)
         {
-            ulong clientId = rpcParams.Receive.SenderClientId;
-
-            if (!_playerStateDictionary.ContainsKey(clientId))
-            {
-                _playerStateDictionary.Add(clientId, ("Player" + clientId, true));
-            }
-            else
-            {
-                _playerStateDictionary[clientId] = (_playerStateDictionary[clientId].playerName, true);
-            }
+            ulong clientId = rpcParams.Receive.SenderClientId;          
 
             PlayerSessionDataManager.Instance.SetPlayerStatusServerRpc(clientId, true);   
-            NotifyPlayerLobbyStateChangeClientRpc(clientId, true);
+            SetPlayerLobbyStateClientRpc(clientId, true);
 
             if (NetworkManager.Singleton.ConnectedClients.Count == MultiplayerManager.MAX_LOBBY_SIZE)
             {
@@ -72,7 +63,7 @@ namespace ConnectFourMultiplayer.Network
 
                 foreach (ulong clientID in NetworkManager.Singleton.ConnectedClientsIds)
                 {
-                    if (!_playerStateDictionary.ContainsKey(clientID) || !_playerStateDictionary[clientID].isReady)
+                    if (!_playerStateDictionary.ContainsKey(clientID) || !_playerStateDictionary[clientID])
                     {
                         allClientsReady = false;
                         break;
@@ -92,18 +83,14 @@ namespace ConnectFourMultiplayer.Network
         {
             ulong clientId = rpcParams.Receive.SenderClientId;
 
-            if (_playerStateDictionary.ContainsKey(clientId))
-            {
-                _playerStateDictionary[clientId] = (_playerStateDictionary[clientId].playerName, false);
-            }
-
             PlayerSessionDataManager.Instance.SetPlayerStatusServerRpc(clientId, false);
-            NotifyPlayerLobbyStateChangeClientRpc(clientId, false);
+            SetPlayerLobbyStateClientRpc(clientId, false);
         }
 
         [ClientRpc]
-        public void NotifyPlayerLobbyStateChangeClientRpc(ulong clientId, bool isReady)
+        public void SetPlayerLobbyStateClientRpc(ulong clientId, bool isReady)
         {
+            _playerStateDictionary[clientId] = isReady;
             EventBusManager.Instance.Raise(EventNameEnum.PlayerLobbyStateChanged, clientId, isReady);
         }
 

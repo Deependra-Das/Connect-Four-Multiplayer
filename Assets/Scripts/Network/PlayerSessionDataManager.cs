@@ -76,19 +76,19 @@ namespace ConnectFourMultiplayer.Network
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         public void SetPlayerStatusServerRpc(ulong clientId, bool isReady)
         {
-            PlayerSessionData sessionDataToUpdate;
-
             if (playerSessionDataNetworkList != null)
             {
-                foreach (var sessionData in playerSessionDataNetworkList)
+                for (int i = 0; i < playerSessionDataNetworkList.Count; i++)
                 {
+                    var sessionData = playerSessionDataNetworkList[i];
+
                     if (sessionData.clientId == clientId)
                     {
-                        sessionDataToUpdate = sessionData;
-                        break;
+                        sessionData.isReady = isReady;
+                        playerSessionDataNetworkList[i] = sessionData;
+                        return;
                     }
                 }
-                sessionDataToUpdate.isReady = isReady;
             }
         }
 

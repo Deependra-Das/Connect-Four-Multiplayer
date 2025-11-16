@@ -32,6 +32,9 @@ public struct PlayerSessionData : INetworkSerializable, IEquatable<PlayerSession
     public bool Equals(PlayerSessionData other)
     {
         return clientId == other.clientId &&
-               playerId.Equals(other.playerId);
+               playerId.Equals(other.playerId) &&
+                username.Equals(other.username) &&
+                 winsCount.Equals(other.winsCount) &&
+                 isReady.Equals(other.isReady);
     }
 }
