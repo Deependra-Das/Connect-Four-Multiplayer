@@ -64,6 +64,7 @@ namespace ConnectFourMultiplayer.Network
         public override void OnNetworkDespawn()
         {
             _currentTurn.OnValueChanged -= OnTurnChanged;
+            Dispose();
         }
 
         private IEnumerator WaitForPlayersReady()
@@ -412,6 +413,30 @@ namespace ConnectFourMultiplayer.Network
         private void NotifyPlayerGiveUpClientRpc(PlayerTurnEnum gameLoser)
         {
             EventBusManager.Instance.Raise(EventNameEnum.PlayerGiveUp, gameLoser);
+        }
+
+        private void Dispose()
+        {
+            StopAllCoroutines();
+
+            if (IsServer)
+            {
+                _currentTurn.Value = PlayerTurnEnum.None;
+                _gameplayState.Value = GameplayStateEnum.WaitingForPlayers;
+                _gameWinner.Value = PlayerTurnEnum.None;
+                _gameTurnQueue.Clear();
+                _readyPlayersNetworkList.Clear();
+                _winningDisksNetworkList.Clear();
+            }
+
+            foreach (var disk in _spawnedDisks)
+            {
+                if (disk != null) Destroy(disk);
+            }
+
+            _spawnedDisks = new GameObject[_rowCount, _colCount];
+            _rowCount = 0;
+            _colCount = 0;
         }
     }
 }
