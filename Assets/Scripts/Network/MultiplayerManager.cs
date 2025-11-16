@@ -16,7 +16,7 @@ namespace ConnectFourMultiplayer.Network
 
         public const int MAX_LOBBY_SIZE = 2;
 
-        public NetworkVariable<PlayerTurnEnum> _gameWinner = new NetworkVariable<PlayerTurnEnum>(PlayerTurnEnum.None,
+        public NetworkVariable<PlayerTurnEnum> winnerPlayer = new NetworkVariable<PlayerTurnEnum>(PlayerTurnEnum.None,
            NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         private void Awake()
@@ -110,8 +110,8 @@ namespace ConnectFourMultiplayer.Network
         {
             if (IsServer)
             {
-                _gameWinner.Value = winner;
-                Debug.Log(_gameWinner.Value);
+                winnerPlayer.Value = winner;
+                Debug.Log(winnerPlayer.Value);
             }
         }
     }

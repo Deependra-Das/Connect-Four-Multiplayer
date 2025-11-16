@@ -1,6 +1,9 @@
+using ConnectFourMultiplayer.Gameplay;
 using ConnectFourMultiplayer.Main;
+using ConnectFourMultiplayer.Network;
 using System.Collections;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace ConnectFourMultiplayer.UI
@@ -13,6 +16,7 @@ namespace ConnectFourMultiplayer.UI
 
         void Start()
         {
+            SetWinnerDetails();
             EnableView();
             StartCoroutine(GameOverCountdownSequence());
         }
@@ -25,6 +29,19 @@ namespace ConnectFourMultiplayer.UI
         public void DisableView()
         {
             gameObject.SetActive(false);
+        }
+
+        private void SetWinnerDetails()
+        {
+            switch(MultiplayerManager.Instance.winnerPlayer.Value)
+            {
+                case PlayerTurnEnum.Player1:
+                    _winnerUserNameText.text = PlayerSessionDataManager.Instance.GetPlayerSessionData(NetworkManager.Singleton.ConnectedClients[0].ClientId).username.ToString();
+                    break;
+                case PlayerTurnEnum.Player2:
+                    _winnerUserNameText.text = PlayerSessionDataManager.Instance.GetPlayerSessionData(NetworkManager.Singleton.ConnectedClients[1].ClientId).username.ToString();
+                    break;
+            }
         }
 
         private IEnumerator GameOverCountdownSequence()
