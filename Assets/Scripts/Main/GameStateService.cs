@@ -1,6 +1,4 @@
 using ConnectFourMultiplayer.Event;
-using System;
-using UnityEngine;
 
 namespace ConnectFourMultiplayer.Main
 {
@@ -9,33 +7,52 @@ namespace ConnectFourMultiplayer.Main
         private GameStateEnum _currentState = GameStateEnum.MainMenu;
         public GameStateEnum CurrentState => _currentState;
 
-        public void ChangeState(GameStateEnum newState)
+        public GameStateService()
         {
-            if (_currentState == newState)
-                return;
-            _currentState = newState;
-            HandleSceneChange(newState);
+            EventBusManager.Instance.Subscribe(EventNameEnum.SceneLoaded, OnSceneLoaded);
         }
 
-        private void HandleSceneChange(GameStateEnum newState)
+        ~GameStateService()
         {
-            switch (newState)
+            EventBusManager.Instance.Unsubscribe(EventNameEnum.SceneLoaded, OnSceneLoaded);
+        }
+
+        private void OnSceneLoaded(object[] paramters)
+        {
+            if (paramters == null || paramters.Length == 0)
+                return;
+
+            SceneNameEnum currentSceneLoaded = (SceneNameEnum)paramters[0];
+            HandleSceneGameStateChange(currentSceneLoaded);
+        }
+
+        private void HandleSceneGameStateChange(SceneNameEnum currentScene)
+        {
+            switch (currentScene)
             {
-                case GameStateEnum.MainMenu:
-                    SceneLoader.Instance.LoadScene(SceneNameEnum.MainMenuScene, false);
+                case SceneNameEnum.MainMenuScene:
+                    ChangeState(GameStateEnum.MainMenu);
                     break;
-                case GameStateEnum.Lobby:
-                    SceneLoader.Instance.LoadScene(SceneNameEnum.LobbyScene, false);
+                case SceneNameEnum.LobbyScene:
+                    ChangeState(GameStateEnum.Lobby);
                     break;
-                case GameStateEnum.Gameplay:
-                    SceneLoader.Instance.LoadScene(SceneNameEnum.GameplayScene, false);
+                case SceneNameEnum.GameplayScene:
+                    ChangeState(GameStateEnum.Gameplay);
                     break;
-                case GameStateEnum.GameOver:
-                    SceneLoader.Instance.LoadScene(SceneNameEnum.GameOverScene, false);
+                case SceneNameEnum.GameOverScene:
+                    ChangeState(GameStateEnum.GameOver);
                     break;
             }
+        }
 
+        public void ChangeState(GameStateEnum newState)
+        {
+            if (_currentState == newState) return;
+
+            _currentState = newState;
             EventBusManager.Instance.Raise(EventNameEnum.ChangeGameState, _currentState);
         }
+
+
     }
 }
