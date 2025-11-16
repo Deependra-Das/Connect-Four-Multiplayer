@@ -27,6 +27,14 @@ namespace ConnectFourMultiplayer.Network
             PlayerUsername = PlayerPrefs.GetString(GameManager.UsernameKey).ToString();
         }
 
+        public override void OnNetworkSpawn() { }
+
+        public override void OnNetworkDespawn() 
+        {
+            base.OnNetworkSpawn();
+            Dispose();
+        }
+
         public void StartHost()
         {
             NetworkManager.Singleton.ConnectionApprovalCallback += NetworkManager_ConnectionApprovalCallback;
@@ -111,8 +119,17 @@ namespace ConnectFourMultiplayer.Network
             if (IsServer)
             {
                 winnerPlayer.Value = winner;
-                Debug.Log(winnerPlayer.Value);
             }
+        }
+
+        private void Dispose()
+        {
+            if (NetworkManager.Singleton.IsServer || NetworkManager.Singleton.IsHost)
+            {
+                winnerPlayer.Value = PlayerTurnEnum.None;
+            }
+
+            PlayerUsername = string.Empty;
         }
     }
 }
