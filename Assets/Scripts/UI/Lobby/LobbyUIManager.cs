@@ -142,7 +142,6 @@ namespace ConnectFourMultiplayer.UI
         {
             ulong clientId = (ulong)parameters[0];
 
-            Debug.Log(clientId);
             if (NetworkManager.Singleton.IsHost)
             {
                 DespawnLobbyParticipant(clientId);
