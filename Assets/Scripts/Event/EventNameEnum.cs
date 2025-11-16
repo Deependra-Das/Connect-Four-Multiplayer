@@ -19,5 +19,7 @@ namespace ConnectFourMultiplayer.Event
         ChangePlayerTurn,
         GameOver,
         PlayerGiveUp,
+        SetWinnerOnGameOverUI,
+        StartGameOverCountdown
     }
 }
