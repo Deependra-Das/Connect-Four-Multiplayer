@@ -38,12 +38,18 @@ namespace ConnectFourMultiplayer.Disk
 
         private void ToggleDiskRedPreview(bool visibility)
         {
-            _diskRedPreview.SetActive(visibility);
+            if (_diskRedPreview != null)
+            {
+                _diskRedPreview.SetActive(visibility);
+            }           
         }
 
         private void ToggleDiskYellowPreview(bool visibility)
         {
-            _diskYellowPreview.SetActive(visibility);
+            if (_diskYellowPreview != null)
+            {
+                _diskYellowPreview.SetActive(visibility);
+            }
         }
 
         public void HandleHoverOverColumnDiskPreview(PlayerTurnEnum playerTurn, Vector3 position)
@@ -78,6 +84,20 @@ namespace ConnectFourMultiplayer.Disk
                     ToggleDiskYellowPreview(true);
                     break;
             }
-        }  
+        }
+
+        public void Reset()
+        {
+            DisableDiskPreview();
+
+            if (_diskRedPreview != null)
+            {
+                GameObject.Destroy(_diskRedPreview);
+            }
+            if (_diskYellowPreview != null)
+            {
+                GameObject.Destroy(_diskYellowPreview);
+            }
+        }
     }
 }
