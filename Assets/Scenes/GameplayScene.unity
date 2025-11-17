@@ -1329,6 +1329,7 @@ MonoBehaviour:
   _uiElementToSlide: {fileID: 1422044568}
   _uiElementImage: {fileID: 323117640}
   _slideDuration: 0.5
+  _messageDisplayDuration: 3
   _leftColor: {r: 1, g: 0, b: 0, a: 1}
   _rightColor: {r: 1, g: 0.79510856, b: 0, a: 1}
   _centerColor: {r: 0, g: 0, b: 0, a: 1}
@@ -3259,7 +3260,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 959.99994, y: -219.92865}
-  m_SizeDelta: {x: 640, y: 240}
+  m_SizeDelta: {x: 800, y: 240}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1742881119
 MonoBehaviour:
