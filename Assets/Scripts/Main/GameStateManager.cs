@@ -24,7 +24,28 @@ namespace ConnectFourMultiplayer.Main
                 yield break;
             }
 
-            EventBusManager.Instance.Raise(EventNameEnum.SceneLoaded, sceneName);
+            GameManager.Instance.Get<GameStateService>().ChangeState(HandleSceneToGameStateConversion(sceneName));            
+        }
+
+        private GameStateEnum HandleSceneToGameStateConversion(SceneNameEnum currentScene)
+        {
+            GameStateEnum newState = GameStateEnum.MainMenu;
+            switch (currentScene)
+            {
+                case SceneNameEnum.MainMenuScene:
+                    newState = GameStateEnum.MainMenu;
+                    break;
+                case SceneNameEnum.LobbyScene:
+                    newState = GameStateEnum.Lobby;
+                    break;
+                case SceneNameEnum.GameplayScene:
+                    newState = GameStateEnum.Gameplay;
+                    break;
+                case SceneNameEnum.GameOverScene:
+                    newState = GameStateEnum.GameOver;
+                    break;
+            }
+            return newState;
         }
     }
 }
