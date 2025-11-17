@@ -84,6 +84,7 @@ namespace ConnectFourMultiplayer.UI
             _readyButton.gameObject.SetActive(true);
             HideConfirmationPopup();
             SetLobbyInformation();
+            SetHostLobbyNoticeText();
             SpawnAllConnectedClients();
         }
 
@@ -288,6 +289,18 @@ namespace ConnectFourMultiplayer.UI
             else
             {
                 _lobbyStatusText.text = "Waiting for Players to Join";
+            }
+        }
+
+        private void SetHostLobbyNoticeText()
+        {
+            if (NetworkManager.Singleton.IsHost)
+            {
+                _hostLobbyNoticeText.gameObject.SetActive(true);
+            }
+            else
+            {
+                _hostLobbyNoticeText.gameObject.SetActive(false);
             }
         }
     }
