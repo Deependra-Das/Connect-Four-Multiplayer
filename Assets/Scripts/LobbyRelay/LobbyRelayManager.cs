@@ -20,6 +20,8 @@ namespace ConnectFourMultiplayer.LobbyRelay
     {
         public static LobbyRelayManager Instance { get; private set; }
 
+        public int lobbySize = 2;
+        public bool isPrivate = false;
         private const string KEY_RELAY_JOIN_CODE = "RelayJoinCode";
         private Lobby _joinedLobby;
         private float _heartbeatTimer = 0;
@@ -73,7 +75,7 @@ namespace ConnectFourMultiplayer.LobbyRelay
         {
             try
             {
-                int maxConnections = 1;
+                int maxConnections = MultiplayerManager.MAX_LOBBY_SIZE - 1;
 
                 Allocation allocation = await RelayService.Instance.CreateAllocationAsync(maxConnections);
                 return allocation;
@@ -117,8 +119,6 @@ namespace ConnectFourMultiplayer.LobbyRelay
         public async void CreateLobby()
         {
             string lobbyName = GenerateRandomLobbyName();
-            int lobbySize = 2;
-            bool isPrivate = false;
 
             EventBusManager.Instance.RaiseNoParams(EventNameEnum.CreateLobbyStarted);
             try

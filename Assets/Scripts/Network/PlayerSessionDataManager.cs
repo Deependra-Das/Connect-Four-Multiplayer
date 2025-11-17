@@ -121,8 +121,6 @@ namespace ConnectFourMultiplayer.Network
                 {
                     playerSessionDataNetworkList.Clear();
                 }
-
-                playerSessionDataNetworkList = null;
             }
         }
     }
