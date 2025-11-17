@@ -1,6 +1,7 @@
 using ConnectFourMultiplayer.Event;
 using ConnectFourMultiplayer.Gameplay;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace ConnectFourMultiplayer.Disk
 {
@@ -16,28 +17,14 @@ namespace ConnectFourMultiplayer.Disk
         {
             _diskRedPreviewPrefab = diskScriptableObject.diskRedPreviewPrefab;
             _diskYellowPreviewPrefab = diskScriptableObject.diskYellowPreviewPrefab;
-            SubscribeToEvents();
         }
 
         ~DiskPreviewService()
         {
-            UnsubscribeToEvents();
             _diskRedPreviewPrefab = null;
             _diskYellowPreviewPrefab = null;
             _diskRedPreview = null;
             _diskYellowPreview = null;
-        }
-
-        private void SubscribeToEvents()
-        {
-            EventBusManager.Instance.Subscribe(EventNameEnum.TakeTurn, HandleTakeTurnDiskPreview);
-            EventBusManager.Instance.Subscribe(EventNameEnum.GameOver, HandleGameOverDiskPreview);
-        }
-
-        private void UnsubscribeToEvents()
-        {
-            EventBusManager.Instance.Unsubscribe(EventNameEnum.TakeTurn, HandleTakeTurnDiskPreview);
-            EventBusManager.Instance.Unsubscribe(EventNameEnum.GameOver, HandleGameOverDiskPreview);
         }
 
         public void Initialize(Vector3 spawnLocation)
@@ -51,12 +38,18 @@ namespace ConnectFourMultiplayer.Disk
 
         private void ToggleDiskRedPreview(bool visibility)
         {
-            _diskRedPreview.SetActive(visibility);
+            if (_diskRedPreview != null)
+            {
+                _diskRedPreview.SetActive(visibility);
+            }           
         }
 
         private void ToggleDiskYellowPreview(bool visibility)
         {
-            _diskYellowPreview.SetActive(visibility);
+            if (_diskYellowPreview != null)
+            {
+                _diskYellowPreview.SetActive(visibility);
+            }
         }
 
         public void HandleHoverOverColumnDiskPreview(PlayerTurnEnum playerTurn, Vector3 position)
@@ -64,27 +57,47 @@ namespace ConnectFourMultiplayer.Disk
             switch (playerTurn)
             {
                 case PlayerTurnEnum.Player1:
-                    ToggleDiskRedPreview(true);
-                    ToggleDiskYellowPreview(false);
                     _diskRedPreview.transform.position = position;
                     break;
                 case PlayerTurnEnum.Player2:
-                    ToggleDiskRedPreview(false);
-                    ToggleDiskYellowPreview(true);
                     _diskYellowPreview.transform.position = position;
                     break;
             }
         }
 
-        private void HandleTakeTurnDiskPreview(object[] parameters)
+        public void DisableDiskPreview()
         {
             ToggleDiskRedPreview(false);
             ToggleDiskYellowPreview(false);
         }
-        private void HandleGameOverDiskPreview(object[] parameters)
+
+        public void HandlePlayerTurnChangeDiskPreview(PlayerTurnEnum playerTurn)
         {
-            ToggleDiskRedPreview(false);
-            ToggleDiskYellowPreview(false);
+            switch (playerTurn)
+            {
+                case PlayerTurnEnum.Player1:
+                    ToggleDiskRedPreview(true);
+                    ToggleDiskYellowPreview(false);
+                    break;
+                case PlayerTurnEnum.Player2:
+                    ToggleDiskRedPreview(false);
+                    ToggleDiskYellowPreview(true);
+                    break;
+            }
+        }
+
+        public void Reset()
+        {
+            DisableDiskPreview();
+
+            if (_diskRedPreview != null)
+            {
+                GameObject.Destroy(_diskRedPreview);
+            }
+            if (_diskYellowPreview != null)
+            {
+                GameObject.Destroy(_diskYellowPreview);
+            }
         }
     }
 }

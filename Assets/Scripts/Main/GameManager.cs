@@ -16,7 +16,6 @@ namespace ConnectFourMultiplayer.Main
         private void Start()
         {
             RegisterServices();
-            ServiceLocator.Get<GameStateService>().ChangeState(GameStateEnum.MainMenu);
         }
 
         private void RegisterServices()

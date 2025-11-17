@@ -1,42 +1,76 @@
-using ConnectFourMultiplayer.Event;
-using ConnectFourMultiplayer.Gameplay;
-using System;
+using ConnectFourMultiplayer.Board;
+using ConnectFourMultiplayer.Disk;
+using ConnectFourMultiplayer.LobbyRelay;
+using ConnectFourMultiplayer.Network;
+using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace ConnectFourMultiplayer.Main
 {
     public class CleanUpService
     {
-        public CleanUpService() 
+        public CleanUpService() { }
+
+        public void CleanUpPlayerSessionDataManager()
         {
-            EventBusManager.Instance.Subscribe(EventNameEnum.ChangeGameState, HandleCleanUp);
+            CleanUpNetworkObject(PlayerSessionDataManager.Instance);
         }
 
-        ~CleanUpService() 
+        public void CleanUpMultiplayerManager()
         {
-            EventBusManager.Instance.Unsubscribe(EventNameEnum.ChangeGameState, HandleCleanUp);
+            CleanUpNetworkObject(MultiplayerManager.Instance);
         }
 
-        private void HandleCleanUp(object[] parameters)
+        public void CleanUpNetworkManager()
         {
-            string activeSceneName = SceneManager.GetActiveScene().name.ToString();
-            Enum.TryParse<SceneNameEnum>(activeSceneName, out var sceneEnumValue);
-
-            switch (sceneEnumValue)
+            if (NetworkManager.Singleton != null)
             {
-                case SceneNameEnum.GameOverScene:
-                    GameOverCleanup();
-                    break;                
+                NetworkManager.Singleton.Shutdown();
+                UnityEngine.Object.Destroy(NetworkManager.Singleton.gameObject);
             }
         }
 
-        public void GameOverCleanup()
+        private void CleanUpNetworkObject(MonoBehaviour obj)
         {
-            if (GameplayManager.Instance != null)
+            if (obj != null)
             {
-                UnityEngine.Object.Destroy(GameplayManager.Instance.gameObject);
+                if (obj is NetworkBehaviour networkBehaviour)
+                {
+                    var networkObject = networkBehaviour.GetComponent<NetworkObject>();
+                    if (networkObject != null && networkObject.IsSpawned && NetworkManager.Singleton.IsServer)
+                    {
+                        networkObject.Despawn(false);
+                    }
+                }
+                UnityEngine.Object.Destroy(obj.gameObject);
+            }
+        }
+
+        public void CleanUpLobbyRelay()
+        {
+            if (LobbyRelayManager.Instance != null)
+            {
+                UnityEngine.Object.Destroy(LobbyRelayManager.Instance.gameObject);
+            }
+        }
+
+        public void ResetServices()
+        {
+            if (GameManager.Instance != null)
+            {
+                var boardService = GameManager.Instance.Get<BoardService>();
+                if (boardService != null)
+                {
+                    boardService.Reset();
+                }
+
+                var diskPreviewService = GameManager.Instance.Get<DiskPreviewService>();
+                if (diskPreviewService != null)
+                {
+                    diskPreviewService.Reset();
+                }
             }
         }
     }
+
 }
