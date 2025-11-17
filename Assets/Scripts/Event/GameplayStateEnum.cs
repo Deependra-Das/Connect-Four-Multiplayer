@@ -5,6 +5,6 @@ namespace ConnectFourMultiplayer.Gameplay
         WaitingForPlayers,
         Initializing,
         Playing,
-        GameOver
+        GameOver,
     }
 }

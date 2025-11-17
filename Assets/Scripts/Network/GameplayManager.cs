@@ -54,6 +54,7 @@ namespace ConnectFourMultiplayer.Network
         {
             base.OnNetworkSpawn();
             _currentTurn.OnValueChanged += OnTurnChanged;
+            NetworkManager.Singleton.OnClientDisconnectCallback += HandlePlayerDisconnect;
 
             if (IsServer)
             {
@@ -64,7 +65,28 @@ namespace ConnectFourMultiplayer.Network
         public override void OnNetworkDespawn()
         {
             _currentTurn.OnValueChanged -= OnTurnChanged;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= HandlePlayerDisconnect;
             Dispose();
+        }
+
+        private void HandlePlayerDisconnect(ulong clientId)
+        {
+            if (IsServer)
+            {
+                if (NetworkManager.Singleton.ConnectedClients.Count < 2)
+                {
+                    if (_gameplayState.Value == GameplayStateEnum.Playing && _gameWinner.Value == PlayerTurnEnum.None)
+                    {
+                        _gameplayState.Value = GameplayStateEnum.GameOver;
+                        _gameWinner.Value = PlayerTurnEnum.None;
+                        _currentTurn.Value = PlayerTurnEnum.None;
+
+                        MultiplayerManager.Instance.SetGameResult(false, _gameWinner.Value);
+                        NotifyGameOverClientRpc();
+                        StartCoroutine(LoadGameOverScene());
+                    }
+                }
+            }
         }
 
         private IEnumerator WaitForPlayersReady()
@@ -300,7 +322,7 @@ namespace ConnectFourMultiplayer.Network
                 _gameWinner.Value = _currentTurn.Value;
                 _currentTurn.Value = PlayerTurnEnum.None;
 
-                MultiplayerManager.Instance.SetGameWinner(_gameWinner.Value);
+                MultiplayerManager.Instance.SetGameResult(true, _gameWinner.Value);
                 NotifyGameOverClientRpc();
                 StartCoroutine(LoadGameOverScene());
             }
@@ -401,7 +423,7 @@ namespace ConnectFourMultiplayer.Network
                 _gameplayState.Value = GameplayStateEnum.GameOver;
                 _currentTurn.Value = PlayerTurnEnum.None;
 
-                MultiplayerManager.Instance.SetGameWinner(_gameWinner.Value);
+                MultiplayerManager.Instance.SetGameResult(true, _gameWinner.Value);
                 PlayerTurnEnum gameLoser = (_gameWinner.Value == PlayerTurnEnum.Player1) ? PlayerTurnEnum.Player2 : PlayerTurnEnum.Player1;
                 NotifyPlayerGiveUpClientRpc(gameLoser);
                 NotifyGameOverClientRpc();

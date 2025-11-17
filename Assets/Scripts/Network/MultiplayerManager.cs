@@ -16,8 +16,8 @@ namespace ConnectFourMultiplayer.Network
 
         public const int MAX_LOBBY_SIZE = 2;
 
-        public NetworkVariable<PlayerTurnEnum> winnerPlayer = new NetworkVariable<PlayerTurnEnum>(PlayerTurnEnum.None,
-           NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        public NetworkVariable<PlayerTurnEnum> winnerPlayer = new NetworkVariable<PlayerTurnEnum>(PlayerTurnEnum.None, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        public NetworkVariable<bool> gameResult = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
         private void Awake()
         {
@@ -91,9 +91,9 @@ namespace ConnectFourMultiplayer.Network
             if (sceneEnumValue == SceneNameEnum.LobbyScene)
             {
                 //Play Player Left Audio
+                RequestPlayerDeregistration(clientId);
             }
 
-            RequestPlayerDeregistration(clientId);
             EventBusManager.Instance.Raise(EventNameEnum.PlayerLeft, clientId);
 
 
@@ -114,10 +114,11 @@ namespace ConnectFourMultiplayer.Network
             PlayerSessionDataManager.Instance.DeregisterPlayerSessionData(clientId);
         }
 
-        public void SetGameWinner(PlayerTurnEnum winner)
+        public void SetGameResult(bool result, PlayerTurnEnum winner)
         {
             if (IsServer)
             {
+                gameResult.Value = result;
                 winnerPlayer.Value = winner;
             }
         }

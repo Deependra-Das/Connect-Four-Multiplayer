@@ -1,4 +1,5 @@
 using ConnectFourMultiplayer.Event;
+using ConnectFourMultiplayer.Main;
 using ConnectFourMultiplayer.Network;
 using System.Collections;
 using TMPro;
@@ -14,8 +15,15 @@ namespace ConnectFourMultiplayer.UI
         [SerializeField] private TMP_Text _player2UsernameText;
         [SerializeField] private TMP_Text _playerNotificationText;
         [SerializeField] private Button _giveUpButton;
-        [SerializeField] private GameObject _messagePanel;
-        [SerializeField] private TMP_Text _messageText;
+
+        [Header("Notification PopUp")]
+        [SerializeField] private GameObject _notificationPopUp;
+        [SerializeField] private TMP_Text _notificationMessageText;
+
+        [Header("Disconnected PopUp")]
+        [SerializeField] private GameObject _disconnectedPopUp;
+        [SerializeField] private TMP_Text _disconnectedCountdownCharSelectUIText;
+        [SerializeField] float _disconnectedCountdownTime = 5f;
 
         public HorizontalLayoutGroup _layoutGroup;
         public RectTransform _uiElementToSlide;
@@ -42,6 +50,8 @@ namespace ConnectFourMultiplayer.UI
             EventBusManager.Instance.Subscribe(EventNameEnum.ChangePlayerTurn, HandleChangePlayerTurn);
             EventBusManager.Instance.Subscribe(EventNameEnum.GameOver, HandleGameOver);
             EventBusManager.Instance.Subscribe(EventNameEnum.PlayerGiveUp, HandlePlayerGiveUp);
+
+            NetworkManager.Singleton.OnClientDisconnectCallback += HandleClientDisconnectCallbackGameplayUI;
         }
 
         private void UnsubscribeFromEvents()
@@ -50,6 +60,11 @@ namespace ConnectFourMultiplayer.UI
             EventBusManager.Instance.Unsubscribe(EventNameEnum.ChangePlayerTurn, HandleChangePlayerTurn);
             EventBusManager.Instance.Unsubscribe(EventNameEnum.GameOver, HandleGameOver);
             EventBusManager.Instance.Unsubscribe(EventNameEnum.PlayerGiveUp, HandlePlayerGiveUp);
+
+            if (NetworkManager.Singleton != null)
+            {
+                NetworkManager.Singleton.OnClientDisconnectCallback -= HandleClientDisconnectCallbackGameplayUI;
+            }
         }
 
         void Start()
@@ -106,18 +121,18 @@ namespace ConnectFourMultiplayer.UI
         {
             int _playerWhoGaveUp = (int)parameters[0];
             _giveUpButton.interactable = false;
-            _messageText.text = "Player " + _playerWhoGaveUp + " Gave Up";
+            _notificationMessageText.text = "Player " + _playerWhoGaveUp + " Gave Up";
             StartCoroutine(ShowHideMessagePanel(3f));
         }
 
         private void ShowMessagePanel()
         {
-            _messagePanel.SetActive(true);
+            _notificationPopUp.SetActive(true);
         }
 
         private void HideMessagePanel()
         {
-            _messagePanel.SetActive(false);
+            _notificationPopUp.SetActive(false);
         }
 
         IEnumerator ShowHideMessagePanel(float duration)
@@ -175,6 +190,65 @@ namespace ConnectFourMultiplayer.UI
             {
                 _uiElementImage.color = targetColor;
             }
+
+        }
+
+        private void HandleClientDisconnectCallbackGameplayUI(ulong clientID)
+        {
+            if (NetworkManager.Singleton == null)
+            {
+                Debug.LogWarning("NetworkManager.Singleton is null.");
+                return;
+            }
+
+            if ((NetworkManager.Singleton.IsServer && clientID == NetworkManager.Singleton.LocalClientId && NetworkManager.Singleton.ConnectedClients.Count <= 1) || !NetworkManager.Singleton.IsServer)
+            {
+                _giveUpButton.interactable = false;
+                ShowDisconnectedNotification();
+                StartCoroutine(DisconnectedCountdownSequence());
+            }
+            else if(NetworkManager.Singleton.IsServer && NetworkManager.Singleton.ConnectedClients.Count <= 1)
+            {
+                _giveUpButton.interactable = false;
+                 string disconnectedPlayer = PlayerSessionDataManager.Instance.GetPlayerSessionData(clientID).username.ToString();
+                _notificationMessageText.text = disconnectedPlayer + " Disconnected from the Game";
+                StartCoroutine(ShowHideMessagePanel(3f));
+            }
+        }
+
+        private void ShowDisconnectedNotification()
+        {
+            _disconnectedPopUp.SetActive(true);
+        }
+
+        private IEnumerator DisconnectedCountdownSequence()
+        {
+            float currentTime = _disconnectedCountdownTime;
+
+            while (currentTime > 0)
+            {
+                _disconnectedCountdownCharSelectUIText.text = "Returning To Main Menu In... " + Mathf.Ceil(currentTime).ToString() + "s";
+                currentTime -= 1f;
+                yield return new WaitForSeconds(1f);
+            }
+
+            CleanUp();
+            HideDisconnectedNotification();
+            SceneLoader.Instance.LoadScene(SceneNameEnum.MainMenuScene, false);
+        }
+
+        private void HideDisconnectedNotification()
+        {
+            _disconnectedPopUp.SetActive(false);
+        }
+
+        private void CleanUp()
+        {
+            GameManager.Instance.Get<CleanUpService>().CleanUpPlayerSessionDataManager();
+            GameManager.Instance.Get<CleanUpService>().CleanUpLobbyRelay();
+            GameManager.Instance.Get<CleanUpService>().ResetServices();
+            GameManager.Instance.Get<CleanUpService>().CleanUpMultiplayerManager();
+            GameManager.Instance.Get<CleanUpService>().CleanUpNetworkManager();
         }
     }
 }
