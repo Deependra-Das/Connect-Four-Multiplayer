@@ -20,7 +20,12 @@ namespace ConnectFourMultiplayer.Network
 
         public override void OnNetworkSpawn()
         {
-            playerSessionDataNetworkList.OnListChanged += OnplayerSessionDataNetworkListChanged;
+            base.OnNetworkSpawn();
+
+            if (playerSessionDataNetworkList != null)
+            {
+                playerSessionDataNetworkList.OnListChanged += OnplayerSessionDataNetworkListChanged;
+            }
         }
 
         public override void OnNetworkDespawn()
@@ -31,6 +36,7 @@ namespace ConnectFourMultiplayer.Network
             {
                 playerSessionDataNetworkList.OnListChanged -= OnplayerSessionDataNetworkListChanged;
             }
+
             Dispose();
         }
 
@@ -38,22 +44,22 @@ namespace ConnectFourMultiplayer.Network
         {
             if (!IsServer) return;
 
-            playerSessionDataNetworkList.Add(new PlayerSessionData(clientId, playerId, username, winsCount, false));
+            if (playerSessionDataNetworkList != null)
+            {
+                playerSessionDataNetworkList.Add(new PlayerSessionData(clientId, playerId, username, winsCount, false));
+            }
         }
 
         public void DeregisterPlayerSessionData(ulong clientId)
         {
-            if (!IsServer) return;
+            if (!IsServer || playerSessionDataNetworkList == null) return;
 
-            if (playerSessionDataNetworkList != null)
+            for (int i = 0; i < playerSessionDataNetworkList.Count; i++)
             {
-                for (int i = 0; i < playerSessionDataNetworkList.Count; i++)
+                if (playerSessionDataNetworkList[i].clientId == clientId)
                 {
-                    if (playerSessionDataNetworkList[i].clientId == clientId)
-                    {
-                        playerSessionDataNetworkList.RemoveAt(i);
-                        break;
-                    }
+                    playerSessionDataNetworkList.RemoveAt(i);
+                    break;
                 }
             }
         }
@@ -92,17 +98,11 @@ namespace ConnectFourMultiplayer.Network
             }
         }
 
-
         private void OnplayerSessionDataNetworkListChanged(NetworkListEvent<PlayerSessionData> changeEvent)
         {
-            switch (changeEvent.Type)
+            if (changeEvent.Type == NetworkListEvent<PlayerSessionData>.EventType.Add)
             {
-                case NetworkListEvent<PlayerSessionData>.EventType.Add:
-                    HandlePlayerJoined(changeEvent.Value);
-                    break;
-
-                default:
-                    break;
+                HandlePlayerJoined(changeEvent.Value);
             }
 
             EventBusManager.Instance.Raise(EventNameEnum.PlayerJoined);
@@ -115,14 +115,10 @@ namespace ConnectFourMultiplayer.Network
 
         public void Dispose()
         {
-            if (IsServer)
+            if (IsServer && playerSessionDataNetworkList != null)
             {
-                if (playerSessionDataNetworkList != null)
-                {
-                    playerSessionDataNetworkList.Clear();
-                }
+                playerSessionDataNetworkList.Clear();
             }
         }
     }
-
 }

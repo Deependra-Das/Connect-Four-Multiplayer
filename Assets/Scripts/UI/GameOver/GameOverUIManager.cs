@@ -14,6 +14,8 @@ namespace ConnectFourMultiplayer.UI
         [SerializeField] private TMP_Text _winnerUserNameText;
         [SerializeField] private TMP_Text _gameOverCountdownText;
         [SerializeField] private float _gameOverCountdownValue = 5f;
+        [SerializeField] private GameObject _winnerDeclarationPanel;
+        [SerializeField] private GameObject _drawDeclarationPanel;
 
         private void OnEnable() => SubscribeToEvents();
 
@@ -33,7 +35,7 @@ namespace ConnectFourMultiplayer.UI
 
         private void HandleWinnerDetailsOnGameOverUI(object[] parameters)
         {
-            SetWinnerDetails();
+            SetGameResult();
             EnableView();
         }
 
@@ -52,15 +54,32 @@ namespace ConnectFourMultiplayer.UI
             gameObject.SetActive(false);
         }
 
+        private void SetGameResult()
+        {
+            if(MultiplayerManager.Instance.gameResult.Value)
+            {
+                SetWinnerDetails();
+                _winnerDeclarationPanel.SetActive(true);
+                _drawDeclarationPanel.SetActive(false);
+            }
+            else
+            {
+                _winnerDeclarationPanel.SetActive(false);
+                _drawDeclarationPanel.SetActive(true);
+            }
+        }
+
         private void SetWinnerDetails()
         {
             switch(MultiplayerManager.Instance.winnerPlayer.Value)
             {
                 case PlayerTurnEnum.Player1:
                     _winnerUserNameText.text = PlayerSessionDataManager.Instance.GetPlayerSessionData(NetworkManager.Singleton.ConnectedClients[0].ClientId).username.ToString();
+                    _winnerDeclarationPanel.SetActive(true);
                     break;
                 case PlayerTurnEnum.Player2:
                     _winnerUserNameText.text = PlayerSessionDataManager.Instance.GetPlayerSessionData(NetworkManager.Singleton.ConnectedClients[1].ClientId).username.ToString();
+                    _winnerDeclarationPanel.SetActive(true);
                     break;
             }
         }
