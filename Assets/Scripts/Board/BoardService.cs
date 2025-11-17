@@ -71,8 +71,6 @@ namespace ConnectFourMultiplayer.Board
         public void Reset()
         {
             _board = null;
-            _boardRowCount = 0;
-            _boardColumnCount = 0;
         }
     }
 }

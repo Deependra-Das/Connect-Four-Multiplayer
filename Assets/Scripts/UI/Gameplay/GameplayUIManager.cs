@@ -25,14 +25,15 @@ namespace ConnectFourMultiplayer.UI
         [SerializeField] private TMP_Text _disconnectedCountdownCharSelectUIText;
         [SerializeField] float _disconnectedCountdownTime = 5f;
 
-        public HorizontalLayoutGroup _layoutGroup;
-        public RectTransform _uiElementToSlide;
-        public Image _uiElementImage;
-        public float _slideDuration = 1f;
+        [SerializeField] private HorizontalLayoutGroup _layoutGroup;
+        [SerializeField] private RectTransform _uiElementToSlide;
+        [SerializeField] private Image _uiElementImage;
+        [SerializeField] private float _slideDuration = 1f;
+        [SerializeField] private float _messageDisplayDuration = 3f;
 
-        public Color _leftColor = Color.red;
-        public Color _rightColor = Color.blue;
-        public Color _centerColor = Color.black;
+        [SerializeField] private Color _leftColor = Color.red;
+        [SerializeField] private Color _rightColor = Color.blue;
+        [SerializeField] private Color _centerColor = Color.black;
 
         private RectTransform _layoutRectTransform;
 
@@ -50,7 +51,7 @@ namespace ConnectFourMultiplayer.UI
             EventBusManager.Instance.Subscribe(EventNameEnum.ChangePlayerTurn, HandleChangePlayerTurn);
             EventBusManager.Instance.Subscribe(EventNameEnum.GameOver, HandleGameOver);
             EventBusManager.Instance.Subscribe(EventNameEnum.PlayerGiveUp, HandlePlayerGiveUp);
-
+            EventBusManager.Instance.Subscribe(EventNameEnum.GameDraw, HandleGameDraw);
             NetworkManager.Singleton.OnClientDisconnectCallback += HandleClientDisconnectCallbackGameplayUI;
         }
 
@@ -60,6 +61,7 @@ namespace ConnectFourMultiplayer.UI
             EventBusManager.Instance.Unsubscribe(EventNameEnum.ChangePlayerTurn, HandleChangePlayerTurn);
             EventBusManager.Instance.Unsubscribe(EventNameEnum.GameOver, HandleGameOver);
             EventBusManager.Instance.Unsubscribe(EventNameEnum.PlayerGiveUp, HandlePlayerGiveUp);
+            EventBusManager.Instance.Unsubscribe(EventNameEnum.GameDraw, HandleGameDraw);
 
             if (NetworkManager.Singleton != null)
             {
@@ -75,7 +77,7 @@ namespace ConnectFourMultiplayer.UI
 
         private void SetPlayerUserName()
         {
-            if (NetworkManager.Singleton.ConnectedClients.Count == 2)
+            if (NetworkManager.Singleton.ConnectedClients.Count == MultiplayerManager.MAX_LOBBY_SIZE)
             {
                 PlayerSessionData p1SessionData = PlayerSessionDataManager.Instance.GetPlayerSessionData(NetworkManager.Singleton.ConnectedClients[0].ClientId);
                 PlayerSessionData p2SessionData = PlayerSessionDataManager.Instance.GetPlayerSessionData(NetworkManager.Singleton.ConnectedClients[1].ClientId);
@@ -114,7 +116,6 @@ namespace ConnectFourMultiplayer.UI
             _giveUpButton.interactable = false;
             _playerNotificationText.text = "Game Over";
             SlideToCenter();
-
         }
 
         private void HandlePlayerGiveUp(object[] parameters)
@@ -122,7 +123,13 @@ namespace ConnectFourMultiplayer.UI
             int _playerWhoGaveUp = (int)parameters[0];
             _giveUpButton.interactable = false;
             _notificationMessageText.text = "Player " + _playerWhoGaveUp + " Gave Up";
-            StartCoroutine(ShowHideMessagePanel(3f));
+            StartCoroutine(ShowHideMessagePanel(_messageDisplayDuration));
+        }
+
+        private void HandleGameDraw(object[] parameters)
+        {
+            _notificationMessageText.text = "The board is full - No more turns left";
+            StartCoroutine(ShowHideMessagePanel(_messageDisplayDuration));
         }
 
         private void ShowMessagePanel()
@@ -190,7 +197,6 @@ namespace ConnectFourMultiplayer.UI
             {
                 _uiElementImage.color = targetColor;
             }
-
         }
 
         private void HandleClientDisconnectCallbackGameplayUI(ulong clientID)

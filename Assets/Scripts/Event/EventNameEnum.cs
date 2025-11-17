@@ -21,6 +21,7 @@ namespace ConnectFourMultiplayer.Event
         DisableColumnInput,        
         ChangePlayerTurn,
         GameOver,
+        GameDraw,
         PlayerGiveUp,
         SetWinnerOnGameOverUI,
         StartGameOverCountdown

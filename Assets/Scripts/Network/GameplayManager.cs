@@ -32,9 +32,11 @@ namespace ConnectFourMultiplayer.Network
         private NetworkVariable<PlayerTurnEnum> _gameWinner = new NetworkVariable<PlayerTurnEnum>(PlayerTurnEnum.None,
                 NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
+        private NetworkVariable<int> _turnCounter = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        private int _maxTurns;
+
 
         public static GameplayManager Instance { get; private set; }
-
 
         private void Awake()
         {
@@ -54,6 +56,7 @@ namespace ConnectFourMultiplayer.Network
         {
             base.OnNetworkSpawn();
             _currentTurn.OnValueChanged += OnTurnChanged;
+            _turnCounter.OnValueChanged += OnTurnCounterChanged;
             NetworkManager.Singleton.OnClientDisconnectCallback += HandlePlayerDisconnect;
 
             if (IsServer)
@@ -65,6 +68,7 @@ namespace ConnectFourMultiplayer.Network
         public override void OnNetworkDespawn()
         {
             _currentTurn.OnValueChanged -= OnTurnChanged;
+            _turnCounter.OnValueChanged -= OnTurnCounterChanged;
             NetworkManager.Singleton.OnClientDisconnectCallback -= HandlePlayerDisconnect;
             Dispose();
         }
@@ -114,6 +118,8 @@ namespace ConnectFourMultiplayer.Network
             _rowCount = GameManager.Instance.Get<BoardService>().RowCount;
             _colCount = GameManager.Instance.Get<BoardService>().ColumnCount;
             InitializeSpawnedDiskMatrix(_rowCount, _colCount);
+            _maxTurns = _rowCount * _colCount;
+            Debug.Log(_maxTurns);
             GameManager.Instance.Get<DiskPreviewService>().Initialize(_spawnLocations[0].position);
             NotifyReadyServerRpc(NetworkManager.Singleton.LocalClientId);
         }
@@ -199,6 +205,7 @@ namespace ConnectFourMultiplayer.Network
 
             CheckForWin(turnData.x, turnData.y);
             ChangePlayerTurnServerRpc();
+            _turnCounter.Value++;
         }
 
         [ClientRpc]
@@ -391,6 +398,14 @@ namespace ConnectFourMultiplayer.Network
             return false;
         }
 
+        private void OnTurnCounterChanged(int oldValue, int newValue)
+        {
+            if (newValue >= _maxTurns)
+            {
+                EndGameInDraw();
+            }
+        }
+
         public void HandlePlayerGiveUpGameplay()
         {
             NotifyPlayerGiveUpServerRpc();       
@@ -435,6 +450,26 @@ namespace ConnectFourMultiplayer.Network
         private void NotifyPlayerGiveUpClientRpc(PlayerTurnEnum gameLoser)
         {
             EventBusManager.Instance.Raise(EventNameEnum.PlayerGiveUp, gameLoser);
+        }
+
+        private void EndGameInDraw()
+        {
+            if (IsServer)
+            {
+                _gameWinner.Value = PlayerTurnEnum.None;
+                _gameplayState.Value = GameplayStateEnum.GameOver;
+
+                MultiplayerManager.Instance.SetGameResult(false, _gameWinner.Value);
+                NotifyGameOverClientRpc();
+                NotifyGameDrawClientRpc();
+                StartCoroutine(LoadGameOverScene());
+            }
+        }
+
+        [ClientRpc]
+        private void NotifyGameDrawClientRpc()
+        {
+            EventBusManager.Instance.RaiseNoParams(EventNameEnum.GameDraw);
         }
 
         private void Dispose()
