@@ -1,5 +1,6 @@
 using ConnectFourMultiplayer.Utilities;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Events;
 
 namespace ConnectFourMultiplayer.Event
@@ -10,17 +11,22 @@ namespace ConnectFourMultiplayer.Event
 
         public void Subscribe(EventNameEnum eventName, UnityAction<object[]> listener)
         {
-            if (!_eventDictionary.TryGetValue(eventName.ToString(), out var thisEvent))
+            string eventKey = eventName.ToString().ToUpper();
+
+            if (!_eventDictionary.TryGetValue(eventKey, out var thisEvent))
             {
                 thisEvent = new UnityEvent<object[]>();
-                _eventDictionary.Add(eventName.ToString(), thisEvent);
+                _eventDictionary.Add(eventKey, thisEvent);
             }
+
             thisEvent.AddListener(listener);
         }
 
         public void Unsubscribe(EventNameEnum eventName, UnityAction<object[]> listener)
         {
-            if (_eventDictionary.TryGetValue(eventName.ToString(), out var thisEvent))
+            string eventKey = eventName.ToString().ToUpper();
+
+            if (_eventDictionary.TryGetValue(eventKey, out var thisEvent))
             {
                 thisEvent.RemoveListener(listener);
             }
@@ -28,25 +34,47 @@ namespace ConnectFourMultiplayer.Event
 
         public void Raise(EventNameEnum eventName, params object[] parameters)
         {
-            if (_eventDictionary.TryGetValue(eventName.ToString(), out var thisEvent))
+            string eventKey = eventName.ToString().ToUpper();
+
+            if (_eventDictionary.TryGetValue(eventKey, out var thisEvent))
             {
-                if (parameters == null || parameters.Length == 0)
-                {
-                    thisEvent.Invoke(new object[0]);
-                }
-                else
-                {
-                    thisEvent.Invoke(parameters);
-                }
+                thisEvent.Invoke(parameters ?? new object[0]);
+            }
+            else
+            {
+                Debug.LogWarning($"Event '{eventKey}' has no listeners.");
             }
         }
 
         public void RaiseNoParams(EventNameEnum eventName)
         {
-            if (_eventDictionary.TryGetValue(eventName.ToString(), out var thisEvent))
+            string eventKey = eventName.ToString().ToUpper();
+
+            if (_eventDictionary.TryGetValue(eventKey, out var thisEvent))
             {
                 thisEvent.Invoke(new object[0]);
             }
+            else
+            {
+                Debug.LogWarning($"Event '{eventKey}' has no listeners.");
+            }
+        }
+
+        public void ClearEvent(EventNameEnum eventName)
+        {
+            string eventKey = eventName.ToString().ToUpper();
+
+            if (_eventDictionary.ContainsKey(eventKey))
+            {
+                _eventDictionary[eventKey].RemoveAllListeners();
+            }
+        }
+
+        public bool HasListeners(EventNameEnum eventName)
+        {
+            string eventKey = eventName.ToString().ToUpper();
+            return _eventDictionary.ContainsKey(eventKey) && _eventDictionary[eventKey].GetPersistentEventCount() > 0;
         }
     }
+
 }
