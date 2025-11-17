@@ -1,10 +1,12 @@
+using ConnectFourMultiplayer.Event;
 using ConnectFourMultiplayer.LobbyRelay;
 using ConnectFourMultiplayer.Main;
-using ConnectFourMultiplayer.Network;
 using System.Text.RegularExpressions;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
+
 
 namespace ConnectFourMultiplayer.UI
 {
@@ -31,6 +33,10 @@ namespace ConnectFourMultiplayer.UI
         [SerializeField] private TMP_InputField _usernameInputField;
         [SerializeField] private TMP_Text _errorMessageText;
 
+        [Header("Message PopUp Content")]
+        [SerializeField] private GameObject _messagePopUp;
+        [SerializeField] private TMP_Text _messageText;
+
         private const int _minUserNameLength = 3;
         private const int _maxUserNameLength = 15;
         private const string _defaultUsername = "Player";
@@ -49,6 +55,14 @@ namespace ConnectFourMultiplayer.UI
             _saveUsernameButton.onClick.AddListener(OnSaveUsernameButtonClicked);
             _cancelUsernameChangeButton.onClick.AddListener(OnCancelUsernameChangeButtonClicked);
             _okButton.onClick.AddListener(OnOkButtonClicked);
+
+            EventBusManager.Instance.Subscribe(EventNameEnum.TryingToJoinGame, OnTryingToJoinLobbyUI);
+            EventBusManager.Instance.Subscribe(EventNameEnum.FailedToJoinGame, OnFailedToJoinLobbyUI);
+            EventBusManager.Instance.Subscribe(EventNameEnum.CreateLobbyStarted, OnCreateLobbyStartedUI);
+            EventBusManager.Instance.Subscribe(EventNameEnum.CreateLobbyFailed, OnCreateLobbyFailedUI);
+            EventBusManager.Instance.Subscribe(EventNameEnum.JoinStarted, OnJoinStartedUI);
+            EventBusManager.Instance.Subscribe(EventNameEnum.JoinFailed, OnJoinFailedUI);
+            EventBusManager.Instance.Subscribe(EventNameEnum.QuickJoinFailed, OnQuickJoinFailedUI);
         }
 
         private void UnsubscribeToEvents()
@@ -61,6 +75,14 @@ namespace ConnectFourMultiplayer.UI
             _saveUsernameButton.onClick.RemoveListener(OnSaveUsernameButtonClicked);
             _cancelUsernameChangeButton.onClick.RemoveListener(OnCancelUsernameChangeButtonClicked);
             _okButton.onClick.RemoveListener(OnOkButtonClicked);
+
+            EventBusManager.Instance.Unsubscribe(EventNameEnum.TryingToJoinGame, OnTryingToJoinLobbyUI);
+            EventBusManager.Instance.Unsubscribe(EventNameEnum.FailedToJoinGame, OnFailedToJoinLobbyUI);
+            EventBusManager.Instance.Unsubscribe(EventNameEnum.CreateLobbyStarted, OnCreateLobbyStartedUI);
+            EventBusManager.Instance.Unsubscribe(EventNameEnum.CreateLobbyFailed, OnCreateLobbyFailedUI);
+            EventBusManager.Instance.Unsubscribe(EventNameEnum.JoinStarted, OnJoinStartedUI);
+            EventBusManager.Instance.Unsubscribe(EventNameEnum.JoinFailed, OnJoinFailedUI);
+            EventBusManager.Instance.Unsubscribe(EventNameEnum.QuickJoinFailed, OnQuickJoinFailedUI);
         }
 
         private void Start()
@@ -193,6 +215,76 @@ namespace ConnectFourMultiplayer.UI
         private void HideNotificationPopup()
         {
             _notificationPopup.SetActive(false);
+        }
+        private void ShowMessagePopUp()
+        {
+            _messagePopUp.SetActive(true);
+        }
+
+        private void HideMessagePopUp()
+        {
+            _messagePopUp.SetActive(false);
+        }
+
+        private void ShowNotificationPopUp()
+        {
+            _notificationPopup.SetActive(true);
+        }
+
+        private void HideNotificationPopUp()
+        {
+            _notificationPopup.SetActive(false);
+        }
+
+        private void OnTryingToJoinLobbyUI(object[] parameters)
+        {
+            _messageText.text = "Connecting...";
+            ShowMessagePopUp();
+        }
+
+        private void OnFailedToJoinLobbyUI(object[] parameters)
+        {
+            HideMessagePopUp();
+            _notificationMessageText.text = NetworkManager.Singleton.DisconnectReason;
+
+            if (_notificationMessageText.text == string.Empty)
+            {
+                _notificationMessageText.text = "Failed To Connect.";
+            }
+
+            ShowNotificationPopUp();
+        }
+
+        private void OnCreateLobbyStartedUI(object[] parameters)
+        {
+            _messageText.text = "Creating Lobby...";
+            ShowMessagePopUp();
+        }
+
+        private void OnCreateLobbyFailedUI(object[] parameters)
+        {
+            HideMessagePopUp();
+            _notificationMessageText.text = "Failed To Create Lobby.";
+            ShowNotificationPopUp();
+        }
+        private void OnJoinStartedUI(object[] parameters)
+        {
+            _messageText.text = "Joining Lobby...";
+            ShowMessagePopUp();
+        }
+
+        private void OnQuickJoinFailedUI(object[] parameters)
+        {
+            HideMessagePopUp();
+            _notificationMessageText.text = "Unable to Find a Lobby to Quick Join.";
+            ShowNotificationPopUp();
+        }
+
+        private void OnJoinFailedUI(object[] parameters)
+        {
+            HideMessagePopUp();
+            _notificationMessageText.text = "Failed To Join Lobby.";
+            ShowNotificationPopUp();
         }
     }
 }

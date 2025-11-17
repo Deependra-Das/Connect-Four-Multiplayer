@@ -66,7 +66,7 @@ namespace ConnectFourMultiplayer.Network
 
         public void StartClient()
         {
-            //EventBusManager.Instance.RaiseNoParams(EventNameEnum.TryingToJoinGame);
+            EventBusManager.Instance.RaiseNoParams(EventNameEnum.TryingToJoinGame);
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientHostDisconnected;
             NetworkManager.Singleton.StartClient();
