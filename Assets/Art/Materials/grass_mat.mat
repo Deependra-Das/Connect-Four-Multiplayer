@@ -27,10 +27,13 @@ Material:
     m_Ints: []
     m_Floats:
     - _AlphaThreshold: 0.5
+    - _HeightBlend: 1.5
     - _QueueControl: 0
     m_Colors:
     - _BaseColor: {r: 0, g: 0.16981131, b: 0.013739022, a: 1}
-    - _NearFarRange: {r: 5, g: 20, b: 0, a: 0}
+    - _BottomColor: {r: 0.45920512, g: 0.77254903, b: 0.047058806, a: 1}
+    - _NearColor: {r: 0.8269403, g: 0.9254902, b: 0.18823528, a: 1}
+    - _NearFarRange: {r: -5, g: 20, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &8110465628716799593
