@@ -29,7 +29,8 @@ Material:
     - _AlphaThreshold: 0.5
     - _QueueControl: 0
     m_Colors:
-    - _BaseColor: {r: 0.18409488, g: 0.5849056, b: 0.15726236, a: 1}
+    - _BaseColor: {r: 0, g: 0.16981131, b: 0.013739022, a: 1}
+    - _NearFarRange: {r: 5, g: 20, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &8110465628716799593
