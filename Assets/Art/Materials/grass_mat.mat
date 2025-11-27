@@ -33,6 +33,8 @@ Material:
     - _Smoothness: 0
     - _TopColorThreshold: 0.5
     - _USETERRAINCOLOR: 1
+    - _WindIntensity: 0.2
+    - _WindSpeed: 0.1
     m_Colors:
     - _BaseColor: {r: 0, g: 0.16981131, b: 0.013739022, a: 1}
     - _BottomColor: {r: 0.09758811, g: 0.4056604, b: 0.27530515, a: 1}
