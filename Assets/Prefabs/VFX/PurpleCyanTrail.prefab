@@ -31,8 +31,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4903353156941847172}
-  - {fileID: 7473043507853526680}
   - {fileID: 5643734794726640167}
+  - {fileID: 4764100372093451772}
   m_Father: {fileID: 4481636398050132178}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!96 &427036460997676821
@@ -414,7 +414,7 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
---- !u!1 &4482269498300173860
+--- !u!1 &6394640585667709379
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -422,9 +422,58 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7473043507853526680}
-  - component: {fileID: 7155999393167946987}
-  - component: {fileID: 8753556880328276715}
+  - component: {fileID: 4481636398050132178}
+  - component: {fileID: 4810920231069791064}
+  m_Layer: 0
+  m_Name: PurpleCyanTrail
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4481636398050132178
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6394640585667709379}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 7128292331296599876}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4810920231069791064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6394640585667709379}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 955b6bb9af1700b45ab3d4aea04c366a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlanetOrbit
+  sun: {fileID: 0}
+  orbitSpeed: 0
+  orbitRadius: 0
+  angle: 0
+--- !u!1 &6735016193016783245
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4764100372093451772}
+  - component: {fileID: 8202648835001382553}
+  - component: {fileID: 4779316434561847058}
   m_Layer: 0
   m_Name: trailparticle_vfx_graph
   m_TagString: Untagged
@@ -432,13 +481,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7473043507853526680
+--- !u!4 &4764100372093451772
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4482269498300173860}
+  m_GameObject: {fileID: 6735016193016783245}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -447,13 +496,13 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7128292331296599876}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!2083052967 &7155999393167946987
+--- !u!2083052967 &8202648835001382553
 VisualEffect:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4482269498300173860}
+  m_GameObject: {fileID: 6735016193016783245}
   m_Enabled: 1
   m_Asset: {fileID: 8926484042661614526, guid: a601aea4517c8a045ac0a48fe6dc04a8, type: 3}
   m_InitialEventName: OnPlay
@@ -471,10 +520,10 @@ VisualEffect:
       m_Array: []
     m_Vector4f:
       m_Array:
-      - m_Value: {x: 3.9075534, y: 1.5116534, z: 9.956062, w: 1}
+      - m_Value: {x: 4.087346, y: 1.5116534, z: 9.956062, w: 1}
         m_Name: HeadColor
         m_Overridden: 1
-      - m_Value: {x: 14.537518, y: 53.48667, z: 120.7246, w: 1}
+      - m_Value: {x: 51.947445, y: 14.537518, z: 120.7246, w: 1}
         m_Name: ParticleColor
         m_Overridden: 1
     m_Uint:
@@ -491,14 +540,14 @@ VisualEffect:
       m_Array: []
     m_Bool:
       m_Array: []
---- !u!73398921 &8753556880328276715
+--- !u!73398921 &4779316434561847058
 VFXRenderer:
   serializedVersion: 1
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4482269498300173860}
+  m_GameObject: {fileID: 6735016193016783245}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -537,35 +586,3 @@ VFXRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!1 &6394640585667709379
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4481636398050132178}
-  m_Layer: 0
-  m_Name: PurpleCyanTrail
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4481636398050132178
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6394640585667709379}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 7128292331296599876}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
