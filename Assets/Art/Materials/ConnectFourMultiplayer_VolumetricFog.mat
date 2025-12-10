@@ -25,11 +25,9 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _DistanceMultiplier: 0.08
+    - _DistanceMultiplier: 0.05
     - _MaxDistance: 100
-    - _NoiseOffset: 2
     - _StepSize: 1
-    m_Colors:
-    - _Color: {r: 0.28235292, g: 0.41112506, b: 0.8980392, a: 1}
+    m_Colors: []
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -6,7 +6,6 @@ Shader "ConnectFourMultiplayer/VolumetricFog"
         _MaxDistance("Max distance", float) = 100     
         _StepSize("Step size", Range(0.1, 20)) = 1
         _DistanceMultiplier("Distance multiplier", Range(0,10)) = 1
-        _NoiseOffset("Noise offset", float) = 0
     }
 
     SubShader
@@ -25,10 +24,9 @@ Shader "ConnectFourMultiplayer/VolumetricFog"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
 
             float4 _Color;
-            float _MaxDistance;
-            float _DistanceMultiplier;
-            float _StepSize;
-            float _NoiseOffset;
+               float _MaxDistance;
+               float _DistanceMultiplier;
+               float _StepSize;
 
             float get_density()
             {
@@ -46,9 +44,8 @@ Shader "ConnectFourMultiplayer/VolumetricFog"
                 float viewLength = length(viewDir);
                 float rayDir = normalize(viewDir);
 
-                float2 pixelCoords = IN.texcoord * _BlitTexture_TexelSize.zw;
                 float distanceLimit = min(viewLength, _MaxDistance);
-                float distanceTravelled = InterleavedGradientNoise(pixelCoords, (int)(_Time.y / max(HALF_EPS, unity_DeltaTime.x))) * _NoiseOffset;
+                float distanceTravelled = 0;
                 float transmittance = 1;
 
                 while (distanceTravelled < distanceLimit)
