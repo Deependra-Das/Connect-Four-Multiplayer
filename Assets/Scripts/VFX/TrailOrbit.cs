@@ -4,15 +4,17 @@ namespace ConnectFourMultiplayer.VFX
 {
     public class TrailOrbit : MonoBehaviour
     {
-        [HideInInspector] public GameObject centerPivot;
-        [HideInInspector] public float angle;
-
-        public float orbitSpeed;
+        public GameObject centerPivot;
         public float orbitRadius;
-
+        public float angularVelocity;
+        public float angle;
         void Update()
         {
-            angle -= orbitSpeed * Time.deltaTime;
+            angle -= angularVelocity * Time.deltaTime;
+
+            // keep angle in range
+            if (angle < 0f)
+                angle += 2f * Mathf.PI;
 
             float x = Mathf.Cos(angle) * orbitRadius;
             float y = Mathf.Sin(angle) * orbitRadius;
