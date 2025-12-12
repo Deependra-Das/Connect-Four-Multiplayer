@@ -344,7 +344,7 @@ namespace ConnectFourMultiplayer.Network
 
         private IEnumerator LoadGameOverScene()
         {
-            yield return new WaitForSeconds(3f);
+            yield return new WaitForSeconds(10f);
 
             if (IsServer)
             {
