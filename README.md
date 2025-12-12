@@ -18,6 +18,8 @@ Players can manually host a lobby, join hosted lobby randomly, and play with oth
 - Public Lobbies: All lobbies are public, and players can manually host a lobby or join random lobbies created by other players.
 
 - Simple and Intuitive Gameplay: Drop discs into a grid and try to connect four discs in a row — either horizontally, vertically, or diagonally — in order to win
+
+- Visual Aesthetics : The game features dynamic shaders, particle and visual effects to enhance the aesthetic experience of the gameplay
   
 ---
 
@@ -52,6 +54,14 @@ Unity Relay Service: The Unity Relay service facilitate multiplayer connectivity
 ---
 
 ## How to Play
+
+- Create or Join a Lobby: Host a game by creating a lobby or join a random public lobby created by other players.
+
+- Take Turns: Drop your disc into a column on the grid; discs fall to the lowest available spot.
+
+- Connect Four: Align four discs in a row horizontally, vertically, or diagonally to win.
+
+- Game End: The game ends when a player wins or the grid is full, resulting in a draw.
 
 ---
 
