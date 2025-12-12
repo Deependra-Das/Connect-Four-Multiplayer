@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: cyan_trail_mat
+  m_Name: purple_trail_mat
   m_Shader: {fileID: -6465566751694194690, guid: 578f559eeebdc2346a59e76f96ea23b9, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -60,8 +60,8 @@ Material:
     - _QueueOffset: 0
     m_Colors:
     - _BaseTextureSpeed: {r: -0.5, g: 0, b: 0, a: 0}
-    - _Color01: {r: 0.06274508, g: 0.5510253, b: 0.60784316, a: 1}
-    - _Color02: {r: 0.015686277, g: 0.1280993, b: 0.14901961, a: 1}
+    - _Color01: {r: 0.6335366, g: 0.10012458, b: 0.8490566, a: 1}
+    - _Color02: {r: 0.1108069, g: 0.015686277, b: 0.14901961, a: 1}
     - _DissolveSpeed: {r: -1, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
